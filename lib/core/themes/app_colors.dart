@@ -53,7 +53,9 @@ class AppColors {
 
   // ============ GLASSMORPHISM OVERLAY ============
   static const Color glassOverlay = Color(0x0DFFFFFF); // White with 5% opacity
-  static const Color glassOverlayDark = Color(0x14000000); // Black with 8% opacity
+  static const Color glassOverlayDark = Color(
+    0x14000000,
+  ); // Black with 8% opacity
 
   // ============ TABLE STATUS COLORS ============
   static const Color tableAvailable = Color(0xFF4CAF50);

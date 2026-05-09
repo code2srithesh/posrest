@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/widgets/custom_widgets.dart';
+import '../../../core/widgets/theme_toggle_button.dart';
 import '../controllers/kitchen_controller.dart';
 
 class KitchenScreen extends StatelessWidget {
@@ -21,6 +22,7 @@ class KitchenScreen extends StatelessWidget {
             icon: const Icon(Icons.refresh),
             onPressed: () => kitchenController.refreshOrders(),
           ),
+          const ThemeToggleButton(compact: true),
         ],
       ),
       body: Obx(() {

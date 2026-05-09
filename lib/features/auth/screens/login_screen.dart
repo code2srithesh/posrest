@@ -32,8 +32,8 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
 
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
-        .animate(
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
           CurvedAnimation(
             parent: _animationController,
             curve: const Interval(0, 0.6, curve: Curves.easeOut),
@@ -121,20 +121,19 @@ class _LoginScreenState extends State<LoginScreen>
                         // Title
                         Text(
                           'POSRest',
-                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.displayMedium
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         // Subtitle
                         Text(
                           'Restaurant Point of Sale System',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(color: Colors.white70, fontSize: 16),
                         ),
                         const SizedBox(height: 48),
                         // Glassmorphic login card
@@ -165,9 +164,7 @@ class _LoginScreenState extends State<LoginScreen>
           color: Colors.white.withOpacity(0.2),
           border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
         ),
-        child: const Center(
-          child: Text('🍽️', style: TextStyle(fontSize: 50)),
-        ),
+        child: const Center(child: Text('🍽️', style: TextStyle(fontSize: 50))),
       ),
     );
   }
@@ -309,10 +306,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Colors.white,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: Colors.white, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -341,10 +335,7 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 15,
-              ),
+              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15),
             ],
           ),
           child: Material(
@@ -392,10 +383,7 @@ class _LoginScreenState extends State<LoginScreen>
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
           ),
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -414,9 +402,21 @@ class _LoginScreenState extends State<LoginScreen>
                 runSpacing: 8,
                 alignment: WrapAlignment.center,
                 children: [
-                  _buildDemoUserChip('admin@posrest.com', 'admin123', controller),
-                  _buildDemoUserChip('manager@posrest.com', 'manager123', controller),
-                  _buildDemoUserChip('waiter@posrest.com', 'waiter123', controller),
+                  _buildDemoUserChip(
+                    'admin@posrest.com',
+                    'admin123',
+                    controller,
+                  ),
+                  _buildDemoUserChip(
+                    'manager@posrest.com',
+                    'manager123',
+                    controller,
+                  ),
+                  _buildDemoUserChip(
+                    'waiter@posrest.com',
+                    'waiter123',
+                    controller,
+                  ),
                   _buildDemoUserChip('chef@posrest.com', 'chef123', controller),
                 ],
               ),
@@ -442,9 +442,7 @@ class _LoginScreenState extends State<LoginScreen>
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.15),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.3)),
           ),
           child: Text(
             email.split('@')[0],

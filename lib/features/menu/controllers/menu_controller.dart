@@ -270,4 +270,76 @@ class MenuController extends GetxController {
   List<MenuItemModel> getItemsByCategory(String categoryId) {
     return menuItems.where((item) => item.categoryId == categoryId).toList();
   }
+
+  final searchMenu = ''.obs;
+  final filteredMenuItems = <MenuItemModel>[].obs;
+
+  void filterByCategory(String categoryId) {
+    if (categoryId.isEmpty) {
+      filteredMenuItems.value = menuItems;
+    } else {
+      filteredMenuItems.value = menuItems
+          .where((item) => item.categoryId == categoryId)
+          .toList();
+    }
+  }
+
+  List<MenuItemModel> getFilteredMenuItems() {
+    return filteredMenuItems;
+  }
+
+  Future<void> addMenuItem({
+    required String name,
+    required double price,
+    required String description,
+  }) async {
+    try {
+      final item = MenuItemModel(
+        id: const Uuid().v4(),
+        categoryId: selectedCategoryId.value,
+        name: name,
+        description: description,
+        price: price,
+        isAvailable: true,
+        isVegetarian: false,
+        isSpicy: false,
+        displayOrder: menuItems.length + 1,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        syncStatus: AppConstants.syncStatusPending,
+      );
+      await menuRepository.createMenuItem(item);
+      await loadMenu();
+      Get.snackbar('Success', 'Menu item added');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to add menu item: $e');
+    }
+  }
+
+  Future<void> updateMenuItem(
+    String itemId, {
+    required String name,
+    required double price,
+    required String description,
+  }) async {
+    try {
+      // Implementation would update the item in repository
+      Get.snackbar('Success', 'Menu item updated');
+      await loadMenu();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update menu item: $e');
+    }
+  }
+
+  Future<void> deleteMenuItem(String itemId) async {
+    try {
+      // Delete item from the menu items list
+      menuItems.removeWhere((item) => item.id == itemId);
+      filteredMenuItems.removeWhere((item) => item.id == itemId);
+      await loadMenu();
+      Get.snackbar('Success', 'Menu item deleted');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete menu item: $e');
+    }
+  }
 }

@@ -135,11 +135,7 @@ class AuthService {
       }
 
       if (user == null) {
-        return {
-          'success': false,
-          'message': 'User not found',
-          'user': null,
-        };
+        return {'success': false, 'message': 'User not found', 'user': null};
       }
 
       if (!user.isActive) {
@@ -169,17 +165,9 @@ class AuthService {
         'auth_token_${user.id}_${DateTime.now().millisecondsSinceEpoch}',
       );
 
-      return {
-        'success': true,
-        'message': 'Login successful',
-        'user': user,
-      };
+      return {'success': true, 'message': 'Login successful', 'user': user};
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Login error: $e',
-        'user': null,
-      };
+      return {'success': false, 'message': 'Login error: $e', 'user': null};
     }
   }
 

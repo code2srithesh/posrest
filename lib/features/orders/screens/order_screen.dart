@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../core/widgets/custom_widgets.dart';
+import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../features/menu/controllers/menu_controller.dart' as menu_ctrl;
 import '../controllers/order_controller.dart';
@@ -46,6 +47,7 @@ class OrderScreen extends StatelessWidget {
               ),
             ),
           ),
+          const ThemeToggleButton(compact: true),
         ],
       ),
       body: Obx(() {
