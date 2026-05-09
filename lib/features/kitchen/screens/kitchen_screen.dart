@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
+import '../../../services/auth_service.dart';
 import '../controllers/kitchen_controller.dart';
 
 class KitchenScreen extends StatelessWidget {
@@ -17,6 +18,10 @@ class KitchenScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.red,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.back(),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

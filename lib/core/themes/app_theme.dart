@@ -27,18 +27,18 @@ class AppTheme {
   static const Color tableReservedBg = AppColors.tableReservedBg;
   static const Color tableReservedIcon = AppColors.tableReserved;
 
-  // ============ LIGHT THEME ============
+  // ============ LIGHT THEME - Dark Gradient Glasmorphic ============
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
-    brightness: Brightness.light,
-    colorScheme: ColorScheme.light(
+    brightness: Brightness.dark,
+    colorScheme: ColorScheme.dark(
       primary: AppColors.primary,
       onPrimary: Colors.white,
-      secondary: AppColors.accentOrange,
+      secondary: AppColors.accentPink,
       onSecondary: Colors.white,
       surface: AppColors.lightCard,
       onSurface: AppColors.lightText,
-      error: AppColors.error,
+      error: AppColors.accentRed,
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: AppColors.lightBg,
@@ -92,7 +92,7 @@ class AppTheme {
     ),
   );
 
-  // ============ DARK THEME ============
+  // ============ DARK THEME - Darker Gradient Glasmorphic ============
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,

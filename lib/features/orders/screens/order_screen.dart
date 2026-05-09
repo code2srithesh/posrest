@@ -5,6 +5,7 @@ import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../features/menu/controllers/menu_controller.dart' as menu_ctrl;
+import '../../../services/auth_service.dart';
 import '../controllers/order_controller.dart';
 
 class OrderScreen extends StatelessWidget {
@@ -32,6 +33,10 @@ class OrderScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Table ${tableNumber ?? 'N/A'} - Order'),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.back(),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.all(16.0),

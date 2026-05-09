@@ -4,6 +4,7 @@ import '../../../core/themes/app_theme.dart';
 import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../services/auth_service.dart';
 import '../controllers/table_controller.dart';
 
 class TableScreen extends StatelessWidget {
@@ -18,6 +19,14 @@ class TableScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Tables'),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            AuthService().logout().then((_) {
+              Get.offAllNamed('/login');
+            });
+          },
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.all(16.0),

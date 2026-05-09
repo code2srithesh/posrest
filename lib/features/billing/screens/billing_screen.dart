@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../core/widgets/custom_widgets.dart';
-import '../../../core/widgets/theme_toggle_button.dart';
-import '../controllers/billing_controller.dart';
+import '../../../services/auth_service.dart';
 
 class BillingScreen extends StatelessWidget {
   final String orderId;
@@ -25,9 +24,11 @@ class BillingScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: AppTheme.primaryColor,
         centerTitle: true,
-        actions: [
-          const ThemeToggleButton(compact: true),
-        ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.back(),
+        ),
+        actions: [const ThemeToggleButton(compact: true)],
       ),
       body: Obx(() {
         if (billingController.isLoading.value) {

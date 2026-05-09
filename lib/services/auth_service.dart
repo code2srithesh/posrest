@@ -222,6 +222,15 @@ class AuthService {
     await _prefs.setString(AppConstants.spUserRole, role);
   }
 
+  // Logout current user
+  Future<void> logout() async {
+    _currentUser = null;
+    await _prefs.remove(AppConstants.spAuthToken);
+    await _prefs.remove(AppConstants.spUserEmail);
+    await _prefs.remove(AppConstants.spUserId);
+    await _prefs.remove(AppConstants.spUserRole);
+  }
+
   // Check if user has permission
   bool hasPermission(String requiredRole) {
     final currentRole = getUserRole();
