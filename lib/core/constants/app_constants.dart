@@ -31,6 +31,7 @@ class AppConstants {
   static const String spUserEmail = 'user_email';
   static const String spLanguage = 'language';
   static const String spTheme = 'theme';
+  static const String spDarkMode = 'dark_mode';
   static const String spTaxRate = 'tax_rate';
   static const String spRestaurantName = 'restaurant_name';
   static const String spLastSyncTime = 'last_sync_time';

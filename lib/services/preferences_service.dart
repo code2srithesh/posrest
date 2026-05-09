@@ -8,6 +8,8 @@ class PreferencesService {
     return _instance;
   }
 
+  static PreferencesService get instance => _instance;
+
   PreferencesService._internal();
 
   late SharedPreferences _prefs;
@@ -29,6 +31,15 @@ class PreferencesService {
     return _prefs.getString(AppConstants.spLanguage) ?? 'en';
   }
 
+  // Dark Mode
+  Future<void> setDarkMode(bool isDark) async {
+    await _prefs.setBool(AppConstants.spDarkMode, isDark);
+  }
+
+  bool get isDarkMode {
+    return _prefs.getBool(AppConstants.spDarkMode) ?? false;
+  }
+
   // Theme
   Future<void> setTheme(String theme) async {
     await _prefs.setString(AppConstants.spTheme, theme);
@@ -37,6 +48,43 @@ class PreferencesService {
   String getTheme() {
     return _prefs.getString(AppConstants.spTheme) ?? 'light';
   }
+
+  // Tax Rate
+  Future<void> setTaxRate(double taxRate) async {
+    await _prefs.setDouble(AppConstants.spTaxRate, taxRate);
+  }
+
+  double getTaxRate() {
+    return _prefs.getDouble(AppConstants.spTaxRate) ?? 5.0; // Default 5% GST
+  }
+
+  // Restaurant Name
+  Future<void> setRestaurantName(String name) async {
+    await _prefs.setString(AppConstants.spRestaurantName, name);
+  }
+
+  String getRestaurantName() {
+    return _prefs.getString(AppConstants.spRestaurantName) ?? 'My Restaurant';
+  }
+
+  // Last Sync Time
+  Future<void> setLastSyncTime(DateTime time) async {
+    await _prefs.setString(AppConstants.spLastSyncTime, time.toIso8601String());
+  }
+
+  DateTime? getLastSyncTime() {
+    final timeStr = _prefs.getString(AppConstants.spLastSyncTime);
+    if (timeStr != null) {
+      return DateTime.parse(timeStr);
+    }
+    return null;
+  }
+
+  // Clear all preferences
+  Future<void> clearAll() async {
+    await _prefs.clear();
+  }
+}
 
   // Tax Rate
   Future<void> setTaxRate(double taxRate) async {
