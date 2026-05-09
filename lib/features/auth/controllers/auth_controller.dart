@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../services/auth_service.dart';
-import '../../../core/constants/app_constants.dart';
-import 'package:uuid/uuid.dart';
 
 class AuthController extends GetxController {
   final emailController = TextEditingController();
@@ -10,37 +8,62 @@ class AuthController extends GetxController {
 
   final isPasswordVisible = false.obs;
   final isLoading = false.obs;
+  final errorMessage = ''.obs;
 
   Future<void> login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter email and password');
+      Get.snackbar(
+        'Validation Error',
+        'Please enter email and password',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
     isLoading.value = true;
+    errorMessage.value = '';
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      // For demo purposes, accept any email/password
-      await AuthService().login(emailController.text, passwordController.text);
-      await AuthService().setUserInfo(
-        const Uuid().v4(),
-        emailController.text,
-        AppConstants.roleWaiter,
+      // Call the new login method
+      final result = await AuthService.instance.login(
+        emailController.text.trim(),
+        passwordController.text,
       );
 
-      Get.offAllNamed('/tables');
+      if (result['success']) {
+        Get.snackbar(
+          'Success',
+          '${result['message']}\nWelcome ${result['user']?.name}!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+        Get.offAllNamed('/tables');
+      } else {
+        errorMessage.value = result['message'] ?? 'Login failed';
+        Get.snackbar(
+          'Login Failed',
+          result['message'] ?? 'Invalid credentials',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
-      Get.snackbar('Error', 'Login failed: $e');
+      errorMessage.value = 'Error: $e';
+      Get.snackbar(
+        'Error',
+        'Login error: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> demoLogin() async {
-    emailController.text = 'demo@posrest.com';
-    passwordController.text = 'demo123';
+  void demoLogin(String email, String password) async {
+    emailController.text = email;
+    passwordController.text = password;
     await login();
   }
 
