@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/themes/app_colors.dart';
+import '../../../core/themes/app_animations.dart';
 import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
+import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../../../services/auth_service.dart';
 import '../controllers/kitchen_controller.dart';
 
@@ -14,10 +17,27 @@ class KitchenScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kitchen Display System'),
-        elevation: 0,
-        backgroundColor: Colors.red,
-        centerTitle: true,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Kitchen Display System'),
+            Text(
+              'Real-time order tracking',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        elevation: 8,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: AppColors.gradientBluePurple,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),
@@ -32,14 +52,71 @@ class KitchenScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (kitchenController.isLoading.value) {
-          return const LoadingIndicator(message: 'Loading orders...');
+          return Center(
+            child: RotateWidget(
+              duration: AppAnimations.slow,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: AppColors.gradientBluePurple,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.restaurant_menu,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+            ),
+          );
         }
 
         if (kitchenController.allOrders.isEmpty) {
-          return const EmptyStateWidget(
-            title: 'No Pending Orders',
-            message: 'Kitchen all caught up!',
-            icon: Icons.done_all,
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: AppColors.gradientBluePurple,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.done_all,
+                    color: Colors.white,
+                    size: 50,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'No Pending Orders',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.lightText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Kitchen all caught up! 🎉',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.lightTextSecondary,
+                  ),
+                ),
+              ],
+            ),
           );
         }
 
@@ -49,12 +126,16 @@ class KitchenScreen extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 0.8,
+            childAspectRatio: 0.85,
           ),
           itemCount: kitchenController.allOrders.length,
           itemBuilder: (context, index) {
             final order = kitchenController.allOrders[index];
-            return _buildOrderCard(context, order, kitchenController);
+            return SlideInWidget(
+              begin: Offset((index % 2) * 0.5 - 0.25, (index ~/ 2) * 0.3),
+              duration: Duration(milliseconds: 300 + (index * 50)),
+              child: _buildOrderCard(context, order, kitchenController),
+            );
           },
         );
       }),
@@ -66,23 +147,29 @@ class KitchenScreen extends StatelessWidget {
     dynamic order,
     KitchenController controller,
   ) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.red, width: 3),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
+    final isReadyOrServed = order.status == 'ready' || order.status == 'served';
+
+    return PulseWidget(
+      minScale: 0.95,
+      maxScale: 1.0,
+      duration: isReadyOrServed ? AppAnimations.medium : AppAnimations.verySlow,
+      child: GlassContainer(
+        backdropColor: AppColors.glassOverlayBlueMed,
+        shadows: AppAnimations.shadowGlowTeal,
+        borderRadius: AppAnimations.radiusLarge,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Order Header
+            // Order Header with Status Badge
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  colors: _getOrderStatusGradient(order.status),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: AppAnimations.radiusMedium,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -94,16 +181,37 @@ class KitchenScreen extends StatelessWidget {
                         'Order #${order.id.substring(0, 8)}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 14,
+                          color: Colors.white,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         'Table ${order.tableNumber}',
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
                       ),
                     ],
                   ),
-                  const Icon(Icons.local_restaurant, color: Colors.red),
+                  PulseWidget(
+                    minScale: 0.9,
+                    maxScale: 1.1,
+                    duration: AppAnimations.fast,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Icon(
+                        _getStatusIcon(order.status),
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -114,10 +222,18 @@ class KitchenScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: order.items.map<Widget>((item) {
+                  children: order.items.asMap().entries.map<Widget>((entry) {
+                    final itemIndex = entry.key;
+                    final item = entry.value;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
-                      child: _buildItemDisplay(item),
+                      child: SlideInWidget(
+                        begin: const Offset(-0.3, 0),
+                        duration: Duration(
+                          milliseconds: 350 + ((itemIndex as int) * 50),
+                        ),
+                        child: _buildItemDisplay(item),
+                      ),
                     );
                   }).toList(),
                 ),
@@ -128,21 +244,39 @@ class KitchenScreen extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: AppColors.gradientPrimaryTeal,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: AppAnimations.radiusLarge,
+                  boxShadow: AppAnimations.shadowGlow,
                 ),
-                onPressed: () => controller.markOrderServed(order.id),
-                child: const Text(
-                  'Served ✓',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => controller.markOrderServed(order.id),
+                    borderRadius: AppAnimations.radiusLarge,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.check_circle, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Mark Served',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -157,8 +291,11 @@ class KitchenScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+        color: AppColors.glassOverlayPurple,
+        borderRadius: AppAnimations.radiusSmall,
+        border: const Border(
+          left: BorderSide(color: AppColors.accentTeal, width: 3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +307,8 @@ class KitchenScreen extends StatelessWidget {
                   '${item.quantity}x ${item.itemName}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 13,
+                    color: AppColors.lightText,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -181,10 +319,10 @@ class KitchenScreen extends StatelessWidget {
           if (item.notes.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              'Notes: ${item.notes}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.orange.shade700,
+              '📝 ${item.notes}',
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.warning,
                 fontStyle: FontStyle.italic,
               ),
               maxLines: 2,
@@ -194,5 +332,43 @@ class KitchenScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<Color> _getOrderStatusGradient(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return [Colors.orange.shade700, Colors.orange.shade600];
+      case 'confirmed':
+        return [Colors.blue.shade700, Colors.blue.shade600];
+      case 'preparing':
+        return [Colors.amber.shade700, Colors.amber.shade600];
+      case 'ready':
+        return [Colors.green.shade700, Colors.green.shade600];
+      case 'served':
+        return [Colors.teal.shade700, Colors.teal.shade600];
+      case 'cancelled':
+        return [Colors.red.shade700, Colors.red.shade600];
+      default:
+        return [AppColors.primary, AppColors.accentTeal];
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Icons.schedule;
+      case 'confirmed':
+        return Icons.check_circle_outline;
+      case 'preparing':
+        return Icons.local_fire_department;
+      case 'ready':
+        return Icons.done;
+      case 'served':
+        return Icons.restaurant;
+      case 'cancelled':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.info_outline;
+    }
   }
 }

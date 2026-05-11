@@ -81,10 +81,7 @@ class _GlassContainerState extends State<GlassContainer>
                 decoration: BoxDecoration(
                   color: widget.backdropColor,
                   borderRadius: widget.borderRadius,
-                  border: Border.all(
-                    color: const Color(0x29FFFFFF),
-                    width: 1,
-                  ),
+                  border: Border.all(color: const Color(0x29FFFFFF), width: 1),
                   boxShadow: widget.shadows,
                 ),
                 child: widget.child,
@@ -183,9 +180,10 @@ class _FadeInWidgetState extends State<FadeInWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(duration: widget.duration, vsync: this);
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     Future.delayed(widget.delay, () {
       if (mounted) {
@@ -202,10 +200,7 @@ class _FadeInWidgetState extends State<FadeInWidget>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: widget.child,
-    );
+    return FadeTransition(opacity: _fadeAnimation, child: widget.child);
   }
 }
 
@@ -239,8 +234,10 @@ class _SlideInWidgetState extends State<SlideInWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(duration: widget.duration, vsync: this);
-    _slideAnimation = Tween<Offset>(begin: widget.begin, end: widget.end)
-        .animate(CurvedAnimation(parent: _controller, curve: widget.curve));
+    _slideAnimation = Tween<Offset>(
+      begin: widget.begin,
+      end: widget.end,
+    ).animate(CurvedAnimation(parent: _controller, curve: widget.curve));
 
     _controller.forward();
   }
@@ -253,10 +250,7 @@ class _SlideInWidgetState extends State<SlideInWidget>
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _slideAnimation,
-      child: widget.child,
-    );
+    return SlideTransition(position: _slideAnimation, child: widget.child);
   }
 }
 
@@ -287,13 +281,13 @@ class _PulseWidgetState extends State<PulseWidget>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    )..repeat(reverse: true);
+    _controller = AnimationController(duration: widget.duration, vsync: this)
+      ..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: widget.minScale, end: widget.maxScale)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _pulseAnimation = Tween<double>(
+      begin: widget.minScale,
+      end: widget.maxScale,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -304,10 +298,7 @@ class _PulseWidgetState extends State<PulseWidget>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _pulseAnimation,
-      child: widget.child,
-    );
+    return ScaleTransition(scale: _pulseAnimation, child: widget.child);
   }
 }
 
@@ -333,10 +324,8 @@ class _RotateWidgetState extends State<RotateWidget>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    )..repeat();
+    _controller = AnimationController(duration: widget.duration, vsync: this)
+      ..repeat();
   }
 
   @override
@@ -347,10 +336,7 @@ class _RotateWidgetState extends State<RotateWidget>
 
   @override
   Widget build(BuildContext context) {
-    return RotationTransition(
-      turns: _controller,
-      child: widget.child,
-    );
+    return RotationTransition(turns: _controller, child: widget.child);
   }
 }
 
@@ -376,10 +362,8 @@ class _ShimmerWidgetState extends State<ShimmerWidget>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    )..repeat();
+    _controller = AnimationController(duration: widget.duration, vsync: this)
+      ..repeat();
   }
 
   @override

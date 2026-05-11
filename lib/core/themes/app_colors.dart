@@ -42,10 +42,16 @@ class AppColors {
 
   // ============ LIGHT THEME (Dark Glasmorphic - Premium) ============
   static const Color lightBg = Color(0xFF0F0C1F); // Dark purple background
-  static const Color lightBgSecondary = Color(0xFF0A0814); // Darker secondary bg
+  static const Color lightBgSecondary = Color(
+    0xFF0A0814,
+  ); // Darker secondary bg
   static const Color lightSurfaceVariant = Color(0xFF16112D); // Dark surface
-  static const Color lightCard = Color(0xFF1A1530); // Dark card with purple tint
-  static const Color lightCardSecondary = Color(0xFF201935); // Secondary dark card
+  static const Color lightCard = Color(
+    0xFF1A1530,
+  ); // Dark card with purple tint
+  static const Color lightCardSecondary = Color(
+    0xFF201935,
+  ); // Secondary dark card
   static const Color lightCardHover = Color(0xFF251E42); // Card hover state
   static const Color lightCardAccent = Color(0xFF2D2650); // Card accent overlay
 
@@ -61,7 +67,9 @@ class AppColors {
   static const Color darkBgSecondary = Color(0xFF03010F); // Darker OLED black
   static const Color darkSurfaceVariant = Color(0xFF0D0B21); // Dark surface
   static const Color darkCard = Color(0xFF1A1530); // Dark card
-  static const Color darkCardSecondary = Color(0xFF201935); // Secondary dark card
+  static const Color darkCardSecondary = Color(
+    0xFF201935,
+  ); // Secondary dark card
   static const Color darkCardHover = Color(0xFF251E42); // Card hover state
   static const Color darkCardAccent = Color(0xFF2D2650); // Card accent overlay
 
@@ -74,26 +82,40 @@ class AppColors {
 
   // ============ GLASSMORPHISM OVERLAY - PREMIUM ============
   // Layered glass effects with varying transparency and color
-  static const Color glassOverlay = Color(0x0DFFFFFF); // Ultra transparent white (5%)
+  static const Color glassOverlay = Color(
+    0x0DFFFFFF,
+  ); // Ultra transparent white (5%)
   static const Color glassOverlayLight = Color(0x1AFFFFFF); // Light white (10%)
-  static const Color glassOverlayMedium = Color(0x2DFFFFFF); // Medium white (18%)
+  static const Color glassOverlayMedium = Color(
+    0x2DFFFFFF,
+  ); // Medium white (18%)
   static const Color glassOverlayDark = Color(0x3DFFFFFF); // Dark white (24%)
 
   // Tinted glass overlays
   static const Color glassOverlayPurple = Color(0x0D6B4CE6); // Purple tint (5%)
-  static const Color glassOverlayPurpleMed = Color(0x1D6B4CE6); // Purple tint (12%)
-  static const Color glassOverlayPurpleDeep = Color(0x2D6B4CE6); // Purple tint (18%)
+  static const Color glassOverlayPurpleMed = Color(
+    0x1D6B4CE6,
+  ); // Purple tint (12%)
+  static const Color glassOverlayPurpleDeep = Color(
+    0x2D6B4CE6,
+  ); // Purple tint (18%)
 
   static const Color glassOverlayTeal = Color(0x0D00D9FF); // Teal tint (5%)
   static const Color glassOverlayTealMed = Color(0x1D00D9FF); // Teal tint (12%)
-  static const Color glassOverlayTealDeep = Color(0x2D00D9FF); // Teal tint (18%)
+  static const Color glassOverlayTealDeep = Color(
+    0x2D00D9FF,
+  ); // Teal tint (18%)
 
   static const Color glassOverlayBlue = Color(0x0D1E3A8A); // Blue tint (5%)
   static const Color glassOverlayBlueMed = Color(0x1D1E3A8A); // Blue tint (12%)
-  static const Color glassOverlayBlueDeep = Color(0x2D1E3A8A); // Blue tint (18%)
+  static const Color glassOverlayBlueDeep = Color(
+    0x2D1E3A8A,
+  ); // Blue tint (18%)
 
   static const Color glassOverlayBlack = Color(0x0D000000); // Black tint (5%)
-  static const Color glassOverlayBlackMed = Color(0x1D000000); // Black tint (12%)
+  static const Color glassOverlayBlackMed = Color(
+    0x1D000000,
+  ); // Black tint (12%)
 
   // ============ TABLE STATUS COLORS ============
   static const Color tableAvailable = Color(0xFF4CAF50);

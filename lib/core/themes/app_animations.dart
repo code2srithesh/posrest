@@ -37,27 +37,15 @@ class AppAnimations {
 
   // ============ SHADOW ANIMATIONS ============
   static const List<BoxShadow> shadowSmall = [
-    BoxShadow(
-      color: Color(0x1A000000),
-      blurRadius: 4,
-      offset: Offset(0, 2),
-    ),
+    BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 2)),
   ];
 
   static const List<BoxShadow> shadowMedium = [
-    BoxShadow(
-      color: Color(0x2D000000),
-      blurRadius: 12,
-      offset: Offset(0, 4),
-    ),
+    BoxShadow(color: Color(0x2D000000), blurRadius: 12, offset: Offset(0, 4)),
   ];
 
   static const List<BoxShadow> shadowLarge = [
-    BoxShadow(
-      color: Color(0x3A000000),
-      blurRadius: 24,
-      offset: Offset(0, 8),
-    ),
+    BoxShadow(color: Color(0x3A000000), blurRadius: 24, offset: Offset(0, 8)),
   ];
 
   static const List<BoxShadow> shadowGlow = [
@@ -78,10 +66,14 @@ class AppAnimations {
 
   // ============ BORDER RADIUS ============
   static const BorderRadius radiusSmall = BorderRadius.all(Radius.circular(6));
-  static const BorderRadius radiusMedium = BorderRadius.all(Radius.circular(12));
+  static const BorderRadius radiusMedium = BorderRadius.all(
+    Radius.circular(12),
+  );
   static const BorderRadius radiusLarge = BorderRadius.all(Radius.circular(16));
   static const BorderRadius radiusXL = BorderRadius.all(Radius.circular(20));
-  static const BorderRadius radiusCircle = BorderRadius.all(Radius.circular(50));
+  static const BorderRadius radiusCircle = BorderRadius.all(
+    Radius.circular(50),
+  );
 
   // ============ GRADIENT ANIMATION BUILDER ============
   /// Create animated gradient background
@@ -112,20 +104,14 @@ class AppAnimations {
     return BoxDecoration(
       color: backdropColor,
       borderRadius: borderRadius,
-      border: border ?? Border.all(
-        color: const Color(0x29FFFFFF),
-        width: 1,
-      ),
+      border: border ?? Border.all(color: const Color(0x29FFFFFF), width: 1),
       boxShadow: shadows.isNotEmpty ? shadows : shadowSmall,
     );
   }
 
   // ============ SHIMMER ANIMATION HELPER ============
   /// Create shimmer loading effect
-  static Widget shimmerEffect({
-    required double width,
-    required double height,
-  }) {
+  static Widget shimmerEffect({required double width, required double height}) {
     return Container(
       width: width,
       height: height,
@@ -148,9 +134,10 @@ class AppAnimations {
   // ============ PULSE ANIMATION ============
   /// Pulse effect for highlights
   static Animation<double> getPulseAnimation(AnimationController controller) {
-    return Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-    );
+    return Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
   }
 
   // ============ SLIDE IN ANIMATION ============
@@ -160,30 +147,35 @@ class AppAnimations {
     Offset begin = const Offset(-1.0, 0.0),
     Offset end = Offset.zero,
   }) {
-    return Tween<Offset>(begin: begin, end: end).animate(
-      CurvedAnimation(parent: controller, curve: Curves.easeOutCubic),
-    );
+    return Tween<Offset>(
+      begin: begin,
+      end: end,
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOutCubic));
   }
 
   // ============ FADE IN ANIMATION ============
   /// Fade in animation
   static Animation<double> getFadeAnimation(AnimationController controller) {
-    return Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-    );
+    return Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
   }
 
   // ============ SCALE ANIMATION ============
   /// Scale animation for emphasis
   static Animation<double> getScaleAnimation(AnimationController controller) {
-    return Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: controller, curve: Curves.elasticOut),
-    );
+    return Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.elasticOut));
   }
 
   // ============ ROTATION ANIMATION ============
   /// Rotation animation for spinners/loaders
-  static Animation<double> getRotationAnimation(AnimationController controller) {
+  static Animation<double> getRotationAnimation(
+    AnimationController controller,
+  ) {
     return Tween<double>(begin: 0.0, end: 1.0).animate(controller);
   }
 }
