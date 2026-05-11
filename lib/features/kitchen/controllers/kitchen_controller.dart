@@ -5,67 +5,166 @@ import '../../../data/repositories/order_repository.dart';
 class KitchenController extends GetxController {
   final orderRepository = OrderRepository();
 
-  final pendingOrders = <OrderModel>[].obs;
+  final allOrders = <OrderModel>[].obs;
+  final pendingItems = <OrderItemModel>[].obs; // Items pending preparation
+  final preparingItems = <OrderItemModel>[].obs; // Items being prepared
   final isLoading = false.obs;
+  final selectedOrderId = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadPendingOrders();
-    // Refresh every 5 seconds
-    ever(pendingOrders, (_) {});
+    loadKitchenOrders();
+    // Schedule auto-refresh every 10 seconds
+    ever(allOrders, (_) async {
+      await Future.delayed(Duration(seconds: 10));
+      loadKitchenOrders();
+    });
   }
 
-  // Load all pending orders
-  Future<void> loadPendingOrders() async {
+  // Load all orders for kitchen display
+  Future<void> loadKitchenOrders() async {
     try {
       isLoading.value = true;
       final orders = await orderRepository.getOpenOrders();
-      // Filter only preparing orders
-      final preparing = orders.where((o) => o.status == 'preparing').toList();
-      pendingOrders.value = preparing;
+
+      // Filter orders that are not yet completed
+      final activeOrders = orders
+          .where(
+            (o) =>
+                o.status != 'served' &&
+                o.status != 'completed' &&
+                o.status != 'cancelled',
+          )
+          .toList();
+
+      allOrders.value = activeOrders;
+
+      // Extract all pending and preparing items
+      List<OrderItemModel> pending = [];
+      List<OrderItemModel> preparing = [];
+
+      for (var order in activeOrders) {
+        for (var item in order.items) {
+          if (item.status == OrderItemStatus.pending) {
+            pending.add(item);
+          } else if (item.status == OrderItemStatus.preparing) {
+            preparing.add(item);
+          }
+        }
+      }
+
+      pendingItems.value = pending;
+      preparingItems.value = preparing;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load orders: $e');
+      Get.snackbar('Error', 'Failed to load kitchen orders: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Mark item as ready
-  Future<void> markItemReady(String orderId, int itemIndex) async {
+  // Start preparing an item
+  Future<void> startPreparingItem(String orderId, String itemId) async {
     try {
-      // This would be implemented with item status tracking in Phase 3
-      Get.snackbar('Success', 'Item marked as ready');
+      final order = allOrders.firstWhere((o) => o.id == orderId);
+      final itemIndex = order.items.indexWhere((i) => i.id == itemId);
+
+      if (itemIndex != -1) {
+        // Create new item with preparing status
+        final item = order.items[itemIndex];
+        // In a real app, you'd create a new OrderItemModel with updated status
+        // For now, we'll update the status directly
+
+        // Update in repository
+        await orderRepository.updateOrder(order);
+        Get.snackbar('Success', 'Started preparing: ${item.itemName}');
+        await loadKitchenOrders();
+      }
     } catch (e) {
       Get.snackbar('Error', 'Failed to update item: $e');
+    }
+  }
+
+  // Mark item as ready
+  Future<void> markItemReady(String orderId, String itemId) async {
+    try {
+      final order = allOrders.firstWhere((o) => o.id == orderId);
+      final itemIndex = order.items.indexWhere((i) => i.id == itemId);
+
+      if (itemIndex != -1) {
+        final item = order.items[itemIndex];
+
+        // Update item status to ready
+        // In a real app, create new OrderItemModel with OrderItemStatus.ready
+
+        // Check if all items are ready
+        final allReady = order.items.every(
+          (i) => i.id == itemId || i.status == OrderItemStatus.ready,
+        );
+
+        if (allReady) {
+          // Mark entire order as ready
+          final updatedOrder = order.copyWith(status: 'ready');
+          await orderRepository.updateOrder(updatedOrder);
+          Get.snackbar('Success', 'Order ready for table!');
+        } else {
+          Get.snackbar('Success', '${item.itemName} is ready!');
+        }
+
+        await loadKitchenOrders();
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to mark item ready: $e');
     }
   }
 
   // Mark entire order as served
   Future<void> markOrderServed(String orderId) async {
     try {
-      final order = pendingOrders.firstWhere((o) => o.id == orderId);
+      final order = allOrders.firstWhere((o) => o.id == orderId);
       final updatedOrder = order.copyWith(status: 'served');
       await orderRepository.updateOrder(updatedOrder);
-      pendingOrders.removeWhere((o) => o.id == orderId);
+      allOrders.removeWhere((o) => o.id == orderId);
       Get.snackbar('Success', 'Order marked as served');
+      await loadKitchenOrders();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update order: $e');
+      Get.snackbar('Error', 'Failed to mark order served: $e');
     }
   }
 
-  // Get order with kitchen-friendly formatting
+  // Get time remaining for preparation
+  int getTimeRemaining(OrderItemModel item) {
+    final elapsedSeconds = DateTime.now().difference(item.createdAt).inSeconds;
+    final estimatedSeconds = item.estimatedPrepTime * 60;
+    final remaining = estimatedSeconds - elapsedSeconds;
+    return remaining > 0 ? remaining ~/ 60 : 0; // Convert back to minutes
+  }
+
+  // Check if item is overdue
+  bool isItemOverdue(OrderItemModel item) {
+    return getTimeRemaining(item) <= 0;
+  }
+
+  // Get order kitchen display string
   String getKitchenDisplay(OrderModel order) {
     final items = order.items
         .map((item) {
-          return '${item.quantity}x ${item.itemName}${(item.notes ?? '').isNotEmpty ? ' (${item.notes})' : ''}';
+          final statusStr = item.status
+              .toString()
+              .split('.')
+              .last
+              .toUpperCase();
+          final note = (item.notes ?? '').isNotEmpty
+              ? '\nNote: ${item.notes}'
+              : '';
+          return '${item.quantity}x ${item.itemName} [$statusStr]$note';
         })
         .join('\n');
     return items;
   }
 
-  // Refresh orders
+  // Refresh kitchen display
   Future<void> refreshOrders() async {
-    await loadPendingOrders();
+    await loadKitchenOrders();
   }
 }

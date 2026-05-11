@@ -93,7 +93,7 @@ class BillingScreen extends StatelessWidget {
                 // Calculations
                 const SizedBox(height: 12),
                 _buildCalculationRow('Subtotal', billingController.subtotal),
-                _buildCalculationRow('Tax (5%)', billingController.taxAmount),
+                _buildCalculationRow('Tax (GST)', billingController.gstAmount),
                 const SizedBox(height: 8),
                 _buildDiscountSection(billingController),
                 const SizedBox(height: 12),
@@ -195,7 +195,7 @@ class BillingScreen extends StatelessWidget {
           children: [
             const Text('Discount', style: TextStyle(fontSize: 14)),
             CurrencyDisplay(
-              amount: controller.discountAmount,
+              amount: controller.discountValue,
               textStyle: const TextStyle(fontSize: 14, color: Colors.red),
             ),
           ],
@@ -212,7 +212,7 @@ class BillingScreen extends StatelessWidget {
                   divisions: 50,
                   label:
                       '${controller.discountPercent.value.toStringAsFixed(1)}%',
-                  onChanged: controller.applyDiscount,
+                  onChanged: controller.applyPercentDiscount,
                 ),
               ),
               Text(

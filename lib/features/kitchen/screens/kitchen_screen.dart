@@ -35,7 +35,7 @@ class KitchenScreen extends StatelessWidget {
           return const LoadingIndicator(message: 'Loading orders...');
         }
 
-        if (kitchenController.pendingOrders.isEmpty) {
+        if (kitchenController.allOrders.isEmpty) {
           return const EmptyStateWidget(
             title: 'No Pending Orders',
             message: 'Kitchen all caught up!',
@@ -51,9 +51,9 @@ class KitchenScreen extends StatelessWidget {
             crossAxisSpacing: 16,
             childAspectRatio: 0.8,
           ),
-          itemCount: kitchenController.pendingOrders.length,
+          itemCount: kitchenController.allOrders.length,
           itemBuilder: (context, index) {
-            final order = kitchenController.pendingOrders[index];
+            final order = kitchenController.allOrders[index];
             return _buildOrderCard(context, order, kitchenController);
           },
         );
