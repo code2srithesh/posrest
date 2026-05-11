@@ -103,7 +103,7 @@ class MenuController extends GetxController {
         MenuItemModel(
           id: const Uuid().v4(),
           categoryId: startersId,
-          name: 'Samosa',
+          name: 'Samosa (2 pcs)',
           description: 'Crispy pastry with spiced potato filling',
           price: 80,
           isAvailable: true,
@@ -117,13 +117,55 @@ class MenuController extends GetxController {
         MenuItemModel(
           id: const Uuid().v4(),
           categoryId: startersId,
+          name: 'Onion Pakora',
+          description: 'Crispy onion fritters in gram flour batter',
+          price: 100,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: true,
+          displayOrder: 2,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: startersId,
           name: 'Paneer Tikka',
           description: 'Grilled cottage cheese with spices',
           price: 180,
           isAvailable: true,
           isVegetarian: true,
           isSpicy: false,
-          displayOrder: 2,
+          displayOrder: 3,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: startersId,
+          name: 'Chicken Tikka',
+          description: 'Tender chicken pieces marinated and grilled',
+          price: 220,
+          isAvailable: true,
+          isVegetarian: false,
+          isSpicy: false,
+          displayOrder: 4,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: startersId,
+          name: 'Spring Roll',
+          description: 'Crispy rolls with vegetable filling',
+          price: 120,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 5,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           syncStatus: AppConstants.syncStatusPending,
@@ -135,7 +177,7 @@ class MenuController extends GetxController {
           id: const Uuid().v4(),
           categoryId: mainId,
           name: 'Butter Chicken',
-          description: 'Tender chicken in creamy tomato sauce',
+          description: 'Tender chicken in creamy tomato sauce - 30 mins',
           price: 320,
           isAvailable: true,
           isVegetarian: false,
@@ -148,13 +190,125 @@ class MenuController extends GetxController {
         MenuItemModel(
           id: const Uuid().v4(),
           categoryId: mainId,
-          name: 'Biryani',
-          description: 'Fragrant rice with meat and spices',
+          name: 'Chicken Tikka Masala',
+          description: 'Grilled chicken in creamy sauce - 25 mins',
+          price: 300,
+          isAvailable: true,
+          isVegetarian: false,
+          isSpicy: false,
+          displayOrder: 2,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Chicken Biryani',
+          description: 'Fragrant basmati rice with chicken - 25 mins',
           price: 280,
           isAvailable: true,
           isVegetarian: false,
           isSpicy: true,
-          displayOrder: 2,
+          displayOrder: 3,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Paneer Tikka Masala',
+          description: 'Cheese in spiced creamy tomato gravy - 20 mins',
+          price: 280,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 4,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Vegetable Biryani',
+          description: 'Rice with mixed vegetables - 20 mins',
+          price: 200,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: true,
+          displayOrder: 5,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Chole Bhature',
+          description: 'Chickpeas curry with fried bread - 15 mins',
+          price: 150,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: true,
+          displayOrder: 6,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Dal Makhani',
+          description: 'Creamy lentils with spices - 30 mins',
+          price: 220,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 7,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Palak Paneer',
+          description: 'Cheese in spinach gravy - 20 mins',
+          price: 240,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 8,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Lamb Curry',
+          description: 'Tender lamb in aromatic curry - 35 mins',
+          price: 380,
+          isAvailable: true,
+          isVegetarian: false,
+          isSpicy: true,
+          displayOrder: 9,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: mainId,
+          name: 'Fried Rice',
+          description: 'Jasmine rice with vegetables and egg - 15 mins',
+          price: 180,
+          isAvailable: true,
+          isVegetarian: false,
+          isSpicy: false,
+          displayOrder: 10,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           syncStatus: AppConstants.syncStatusPending,
@@ -165,9 +319,9 @@ class MenuController extends GetxController {
         MenuItemModel(
           id: const Uuid().v4(),
           categoryId: drinksId,
-          name: 'Lassi',
-          description: 'Yogurt-based drink',
-          price: 60,
+          name: 'Mango Lassi',
+          description: 'Yogurt-based mango drink',
+          price: 100,
           isAvailable: true,
           isVegetarian: true,
           isSpicy: false,
@@ -179,13 +333,69 @@ class MenuController extends GetxController {
         MenuItemModel(
           id: const Uuid().v4(),
           categoryId: drinksId,
-          name: 'Mango Juice',
-          description: 'Fresh mango juice',
+          name: 'Sweet Lassi',
+          description: 'Traditional yogurt drink with sugar',
           price: 80,
           isAvailable: true,
           isVegetarian: true,
           isSpicy: false,
           displayOrder: 2,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: drinksId,
+          name: 'Fresh Mango Juice',
+          description: 'Freshly squeezed mango juice',
+          price: 100,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 3,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: drinksId,
+          name: 'Iced Tea',
+          description: 'Refreshing iced tea with lemon',
+          price: 60,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 4,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: drinksId,
+          name: 'Coca Cola',
+          description: 'Soft drink',
+          price: 50,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 5,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: drinksId,
+          name: 'Sprite',
+          description: 'Lemon-lime soft drink',
+          price: 50,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 6,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           syncStatus: AppConstants.syncStatusPending,
@@ -198,11 +408,53 @@ class MenuController extends GetxController {
           categoryId: dessertsId,
           name: 'Gulab Jamun',
           description: 'Sweet milk solids in sugar syrup',
-          price: 100,
+          price: 120,
           isAvailable: true,
           isVegetarian: true,
           isSpicy: false,
           displayOrder: 1,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: dessertsId,
+          name: 'Kheer',
+          description: 'Rice pudding with milk and nuts',
+          price: 100,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 2,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: dessertsId,
+          name: 'Ras Malai',
+          description: 'Cheese dumplings in sweet cream',
+          price: 150,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 3,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuItemModel(
+          id: const Uuid().v4(),
+          categoryId: dessertsId,
+          name: 'Ice Cream',
+          description: 'Vanilla ice cream',
+          price: 80,
+          isAvailable: true,
+          isVegetarian: true,
+          isSpicy: false,
+          displayOrder: 4,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           syncStatus: AppConstants.syncStatusPending,
@@ -273,15 +525,72 @@ class MenuController extends GetxController {
 
   final searchMenu = ''.obs;
   final filteredMenuItems = <MenuItemModel>[].obs;
+  final filterVegetarian = false.obs;
+  final filterSpicy = false.obs;
 
   void filterByCategory(String categoryId) {
-    if (categoryId.isEmpty) {
-      filteredMenuItems.value = menuItems;
-    } else {
-      filteredMenuItems.value = menuItems
-          .where((item) => item.categoryId == categoryId)
+    selectedCategoryId.value = categoryId;
+    applyAllFilters();
+  }
+
+  // Search menu items
+  void searchMenuItems(String query) {
+    searchMenu.value = query;
+    applyAllFilters();
+  }
+
+  // Toggle vegetarian filter
+  void toggleVegetarianFilter() {
+    filterVegetarian.toggle();
+    applyAllFilters();
+  }
+
+  // Toggle spicy filter
+  void toggleSpicyFilter() {
+    filterSpicy.toggle();
+    applyAllFilters();
+  }
+
+  // Apply all filters together
+  void applyAllFilters() {
+    List<MenuItemModel> results = menuItems;
+
+    // Filter by category
+    if (selectedCategoryId.value.isNotEmpty) {
+      results = results
+          .where((item) => item.categoryId == selectedCategoryId.value)
           .toList();
     }
+
+    // Filter by search query
+    if (searchMenu.value.isNotEmpty) {
+      results = results
+          .where(
+            (item) =>
+                item.name.toLowerCase().contains(
+                  searchMenu.value.toLowerCase(),
+                ) ||
+                (item.description?.toLowerCase() ?? '').contains(
+                  searchMenu.value.toLowerCase(),
+                ),
+          )
+          .toList();
+    }
+
+    // Filter by vegetarian
+    if (filterVegetarian.value) {
+      results = results.where((item) => item.isVegetarian).toList();
+    }
+
+    // Filter by spicy
+    if (filterSpicy.value) {
+      results = results.where((item) => item.isSpicy).toList();
+    }
+
+    // Only show available items
+    results = results.where((item) => item.isAvailable).toList();
+
+    filteredMenuItems.value = results;
   }
 
   List<MenuItemModel> getFilteredMenuItems() {

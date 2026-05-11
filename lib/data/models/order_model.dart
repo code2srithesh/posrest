@@ -1,3 +1,6 @@
+// Order item status enum
+enum OrderItemStatus { pending, preparing, ready, served, cancelled }
+
 class OrderItemModel {
   final String id;
   final String orderId;
@@ -9,8 +12,11 @@ class OrderItemModel {
   final List<String> selectedModifierIds;
   final double modifierPrice;
   final double totalPrice;
+  final OrderItemStatus status; // NEW: Track item status
+  final int estimatedPrepTime; // NEW: In minutes
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? completedAt; // NEW: When item was ready
   final String syncStatus;
   final DateTime? deletedAt;
 
@@ -25,8 +31,11 @@ class OrderItemModel {
     this.selectedModifierIds = const [],
     required this.modifierPrice,
     required this.totalPrice,
+    this.status = OrderItemStatus.pending,
+    this.estimatedPrepTime = 15,
     required this.createdAt,
     required this.updatedAt,
+    this.completedAt,
     required this.syncStatus,
     this.deletedAt,
   });
@@ -43,8 +52,11 @@ class OrderItemModel {
       'selectedModifierIds': selectedModifierIds.join(','),
       'modifierPrice': modifierPrice,
       'totalPrice': totalPrice,
+      'status': status.toString().split('.').last,
+      'estimatedPrepTime': estimatedPrepTime,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'completedAt': completedAt?.toIso8601String(),
       'syncStatus': syncStatus,
       'deletedAt': deletedAt?.toIso8601String(),
     };
@@ -63,6 +75,11 @@ class OrderItemModel {
           (map['selectedModifierIds'] as String?)?.split(',') ?? [],
       modifierPrice: (map['modifierPrice'] ?? 0.0).toDouble(),
       totalPrice: (map['totalPrice'] ?? 0.0).toDouble(),
+      status: OrderItemStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == (map['status'] ?? 'pending'),
+        orElse: () => OrderItemStatus.pending,
+      ),
+      estimatedPrepTime: map['estimatedPrepTime'] ?? 15,
       createdAt: DateTime.parse(
         map['createdAt'] ?? DateTime.now().toIso8601String(),
       ),
