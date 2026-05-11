@@ -160,7 +160,7 @@ void main() {
       // Verify kitchen controller can track orders
       expect(kitchenController.allOrders, isNotNull);
       expect(kitchenController.isLoading, isNotNull);
-      
+
       // Verify observable is reactive
       kitchenController.allOrders.value = orders;
       expect(kitchenController.allOrders.length, 2);
