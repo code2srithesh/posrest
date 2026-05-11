@@ -1,0 +1,125 @@
+Analyzing posrest...                                            
+
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/custom_widgets.dart:15:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/custom_widgets.dart:66:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/custom_widgets.dart:102:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/custom_widgets.dart:148:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/widgets/custom_widgets.dart:170:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/widgets/custom_widgets.dart:174:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/widgets/custom_widgets.dart:178:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/widgets/custom_widgets.dart:182:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/widgets/custom_widgets.dart:186:39 • deprecated_member_use
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/custom_widgets.dart:219:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/custom_widgets.dart:244:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/custom_widgets.dart:278:9 • use_super_parameters
+warning • Unused import: '../themes/app_colors.dart' • lib/core/widgets/glassmorphic_widgets.dart:3:8 • unused_import
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/glassmorphic_widgets.dart:17:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/glassmorphic_widgets.dart:105:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/glassmorphic_widgets.dart:163:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/glassmorphic_widgets.dart:215:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/glassmorphic_widgets.dart:264:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/glassmorphic_widgets.dart:310:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/glassmorphic_widgets.dart:348:9 • use_super_parameters
+warning • Unused import: '../themes/app_colors.dart' • lib/core/widgets/theme_toggle_button.dart:4:8 • unused_import
+   info • Parameter 'key' could be a super parameter • lib/core/widgets/theme_toggle_button.dart:10:9 • use_super_parameters
+   info • Statements in an if should be enclosed in a block • lib/data/database/database_helper.dart:590:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/database/database_helper.dart:639:9 • curly_braces_in_flow_control_structures
+   info • The member 'isOpen' overrides an inherited member but isn't annotated with '@override' • lib/data/database/database_helper.dart:731:12 • annotate_overrides
+   info • Unnecessary braces in a string interpolation • lib/data/models/table_model.dart:101:31 • unnecessary_brace_in_string_interps
+   info • Parameter 'key' could be a super parameter • lib/features/auth/screens/login_screen.dart:8:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:65:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:67:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:84:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:99:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:164:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:165:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:179:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:182:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:187:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:236:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:239:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:292:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:296:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:303:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:332:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:333:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:338:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:384:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:386:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:443:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/screens/login_screen.dart:445:52 • deprecated_member_use
+   info • The constant name 'GST_STANDARD' isn't a lowerCamelCase identifier • lib/features/billing/controllers/billing_controller.dart:22:23 • constant_identifier_names
+   info • The constant name 'GST_PREMIUM' isn't a lowerCamelCase identifier • lib/features/billing/controllers/billing_controller.dart:23:23 • constant_identifier_names
+warning • Unused import: '../../../core/themes/app_theme.dart' • lib/features/billing/screens/billing_screen.dart:3:8 • unused_import
+warning • Unused import: '../../../services/auth_service.dart' • lib/features/billing/screens/billing_screen.dart:9:8 • unused_import
+   info • Parameter 'key' could be a super parameter • lib/features/billing/screens/billing_screen.dart:15:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/billing/screens/billing_screen.dart:118:35 • deprecated_member_use
+   info • Unnecessary use of 'toList' in a spread • lib/features/billing/screens/billing_screen.dart:148:61 • unnecessary_to_list_in_spreads
+warning • The declaration '_buildCalculationRow' isn't referenced • lib/features/billing/screens/billing_screen.dart:360:10 • unused_element
+warning • Unused import: '../../../core/widgets/custom_widgets.dart' • lib/features/kitchen/screens/kitchen_screen.dart:5:8 • unused_import
+warning • Unused import: '../../../services/auth_service.dart' • lib/features/kitchen/screens/kitchen_screen.dart:8:8 • unused_import
+   info • Parameter 'key' could be a super parameter • lib/features/kitchen/screens/kitchen_screen.dart:12:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/kitchen/screens/kitchen_screen.dart:205:45 • deprecated_member_use
+warning • Unused import: '../../../services/auth_service.dart' • lib/features/orders/screens/order_screen.dart:11:8 • unused_import
+   info • Parameter 'key' could be a super parameter • lib/features/orders/screens/order_screen.dart:15:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/screens/order_screen.dart:256:53 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/screens/order_screen.dart:412:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/screens/order_screen.dart:413:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/screens/order_screen.dart:477:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/screens/order_screen.dart:494:47 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/screens/order_screen.dart:745:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/orders/screens/order_screen.dart:779:49 • deprecated_member_use
+   info • Parameter 'key' could be a super parameter • lib/features/tables/screens/table_screen.dart:11:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/tables/screens/table_screen.dart:232:63 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/tables/screens/table_screen.dart:244:46 • deprecated_member_use
+   info • Parameter 'key' could be a super parameter • lib/main.dart:24:9 • use_super_parameters
+   info • Don't invoke 'print' in production code • lib/services/auth_service.dart:102:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/cloud_sync_service.dart:58:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/cloud_sync_service.dart:74:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/cloud_sync_service.dart:96:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/cloud_sync_service.dart:113:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/cloud_sync_service.dart:129:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/cloud_sync_service.dart:148:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/cloud_sync_service.dart:154:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/printer_service.dart:55:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/printer_service.dart:86:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/printer_service.dart:111:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/printer_service.dart:127:7 • avoid_print
+  error • 'MenuController' isn't a function • test/integration/order_flow_test.dart:14:15 • invocation_of_non_function
+  error • The name 'MenuController' is defined in the libraries 'package:flutter/src/widgets/raw_menu_anchor.dart (via package:flutter/material.dart)' and 'package:posrest/features/menu/controllers/menu_controller.dart' • test/integration/order_flow_test.dart:14:15 • ambiguous_import
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:66:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:83:7 • avoid_print
+  error • The name 'MenuController' is defined in the libraries 'package:flutter/src/widgets/raw_menu_anchor.dart (via package:flutter/material.dart)' and 'package:posrest/features/menu/controllers/menu_controller.dart' • test/integration/order_flow_test.dart:90:39 • ambiguous_import
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:99:7 • avoid_print
+  error • The getter 'items' isn't defined for the type 'OrderController' • test/integration/order_flow_test.dart:107:44 • undefined_getter
+  error • The getter 'menuItems' isn't defined for the type 'OrderController' • test/integration/order_flow_test.dart:110:27 • undefined_getter
+  error • The getter 'menuItems' isn't defined for the type 'OrderController' • test/integration/order_flow_test.dart:111:38 • undefined_getter
+  error • The method 'addItem' isn't defined for the type 'OrderController' • test/integration/order_flow_test.dart:112:25 • undefined_method
+  error • The getter 'items' isn't defined for the type 'OrderController' • test/integration/order_flow_test.dart:120:32 • undefined_getter
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:123:7 • avoid_print
+  error • The getter 'items' isn't defined for the type 'OrderController' • test/integration/order_flow_test.dart:123:62 • undefined_getter
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:149:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:166:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:181:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/integration/order_flow_test.dart:192:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:59:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:72:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:97:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:121:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:132:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:149:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:210:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:235:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:255:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:269:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/order_status_test.dart:278:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:55:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:94:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:133:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:172:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:183:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:233:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:260:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/payment_calculation_test.dart:302:7 • avoid_print
+
