@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+import 'app_animations.dart';
 
 class AppTheme {
   // For backward compatibility
@@ -51,8 +52,9 @@ class AppTheme {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
-        shadowColor: AppColors.lightShadow,
+        elevation: 8,
+        shadowColor: const Color(0x4D6B4CE6), // Purple glow
+        animationDuration: AppAnimations.medium,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -116,8 +118,9 @@ class AppTheme {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
-        shadowColor: AppColors.darkShadow,
+        elevation: 8,
+        shadowColor: const Color(0x4D6B4CE6), // Purple glow
+        animationDuration: AppAnimations.medium,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
