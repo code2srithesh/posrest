@@ -5,6 +5,8 @@ import 'features/settings/controllers/theme_controller.dart';
 import 'services/auth_service.dart';
 import 'services/preferences_service.dart';
 import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/register_screen.dart';
+import 'features/admin/screens/user_management_screen.dart';
 import 'features/tables/screens/table_screen.dart';
 import 'features/orders/screens/order_screen.dart';
 import 'features/billing/screens/billing_screen.dart';
@@ -36,11 +38,10 @@ class MyApp extends StatelessWidget {
             ? ThemeMode.dark
             : ThemeMode.light,
         debugShowCheckedModeBanner: false,
-        home: AuthService().isLoggedIn()
-            ? const TableScreen()
-            : const LoginScreen(),
+        home: _resolveStartScreen(),
         getPages: [
           GetPage(name: '/login', page: () => const LoginScreen()),
+          GetPage(name: '/register', page: () => const RegisterScreen()),
           GetPage(name: '/tables', page: () => const TableScreen()),
           GetPage(name: '/order', page: () => const OrderScreen()),
           GetPage(name: '/order/create', page: () => const OrderScreen()),
@@ -49,8 +50,28 @@ class MyApp extends StatelessWidget {
             page: () => BillingScreen(orderId: Get.parameters['orderId'] ?? ''),
           ),
           GetPage(name: '/kitchen', page: () => const KitchenScreen()),
+          GetPage(
+            name: '/admin/users',
+            page: () => const UserManagementScreen(),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _resolveStartScreen() {
+    final authService = AuthService();
+    if (!authService.isLoggedIn()) {
+      return const LoginScreen();
+    }
+
+    switch (authService.getUserRole()) {
+      case 'admin':
+        return const UserManagementScreen();
+      case 'chef':
+        return const KitchenScreen();
+      default:
+        return const TableScreen();
+    }
   }
 }

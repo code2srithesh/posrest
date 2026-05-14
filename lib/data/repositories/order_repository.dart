@@ -9,20 +9,29 @@ class OrderRepository {
     return order.id;
   }
 
-  Future<OrderModel?> getOrderById(String id) {
-    return _dbHelper.getOrder(id);
+  Future<OrderModel?> getOrderById(String id) async {
+    final order = await _dbHelper.getOrder(id);
+    if (order == null) {
+      return null;
+    }
+
+    final items = await _dbHelper.getOrderItems(order.id);
+    return order.copyWith(items: items);
   }
 
-  Future<List<OrderModel>> getAllOrders() {
-    return _dbHelper.getAllOrders();
+  Future<List<OrderModel>> getAllOrders() async {
+    final orders = await _dbHelper.getAllOrders();
+    return _hydrateOrdersWithItems(orders);
   }
 
-  Future<List<OrderModel>> getOrdersByTableId(String tableId) {
-    return _dbHelper.getOrdersByTableId(tableId);
+  Future<List<OrderModel>> getOrdersByTableId(String tableId) async {
+    final orders = await _dbHelper.getOrdersByTableId(tableId);
+    return _hydrateOrdersWithItems(orders);
   }
 
-  Future<List<OrderModel>> getOpenOrders() {
-    return _dbHelper.getOpenOrders();
+  Future<List<OrderModel>> getOpenOrders() async {
+    final orders = await _dbHelper.getOpenOrders();
+    return _hydrateOrdersWithItems(orders);
   }
 
   Future<void> updateOrder(OrderModel order) async {
@@ -35,6 +44,25 @@ class OrderRepository {
       final updated = order.copyWith(status: status, updatedAt: DateTime.now());
       await _dbHelper.updateOrder(updated);
     }
+  }
+
+  Future<void> replaceOrderItems(
+    String orderId,
+    List<OrderItemModel> items,
+  ) async {
+    await _dbHelper.deleteOrderItemsByOrderId(orderId);
+    for (final item in items) {
+      await _dbHelper.insertOrderItem(item);
+    }
+  }
+
+  Future<List<OrderModel>> _hydrateOrdersWithItems(List<OrderModel> orders) async {
+    final hydrated = <OrderModel>[];
+    for (final order in orders) {
+      final items = await _dbHelper.getOrderItems(order.id);
+      hydrated.add(order.copyWith(items: items));
+    }
+    return hydrated;
   }
 
   Future<List<OrderModel>> getDailyOrders(DateTime date) async {

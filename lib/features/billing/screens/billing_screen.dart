@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/themes/app_theme.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_animations.dart';
 import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
-import '../../../services/auth_service.dart';
 import '../controllers/billing_controller.dart';
 
 class BillingScreen extends StatelessWidget {
@@ -24,6 +22,7 @@ class BillingScreen extends StatelessWidget {
     });
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,11 +35,16 @@ class BillingScreen extends StatelessWidget {
             ),
           ],
         ),
-        elevation: 8,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.accentOrange, AppColors.primary],
+              colors: [
+                AppColors.primaryDark,
+                AppColors.primary,
+                AppColors.accentBlue,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -48,331 +52,449 @@ class BillingScreen extends StatelessWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          tooltip: 'Back',
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+              return;
+            }
+
+            Get.offAllNamed('/tables');
+          },
         ),
         actions: [const ThemeToggleButton(compact: true)],
       ),
-      body: Obx(() {
-        if (billingController.isLoading.value) {
-          return const LoadingIndicator(message: 'Loading bill...');
-        }
+      body: AnimatedGradientBG(
+        colors: const [
+          AppColors.gradientStart,
+          AppColors.primaryDark,
+          AppColors.gradientEnd,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        child: Stack(
+          children: [
+            Positioned(
+              top: -90,
+              right: -60,
+              child: Container(
+                width: 230,
+                height: 230,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accentTeal.withOpacity(0.16),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -110,
+              left: -70,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accentOrange.withOpacity(0.12),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Obx(() {
+              if (billingController.isLoading.value) {
+                return const LoadingIndicator(message: 'Loading bill...');
+              }
 
-        if (billingController.currentOrder.value == null) {
-          return const EmptyStateWidget(
-            title: 'No Order Found',
-            message: 'Unable to load order details',
-            icon: Icons.receipt_long,
-          );
-        }
+              if (billingController.currentOrder.value == null) {
+                return const EmptyStateWidget(
+                  title: 'No Order Found',
+                  message: 'Unable to load order details',
+                  icon: Icons.receipt_long,
+                );
+              }
 
-        final order = billingController.currentOrder.value!;
-        final items = order.items;
+              final order = billingController.currentOrder.value!;
+              final items = order.items;
 
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Order Header
-                FadeInWidget(
-                  duration: AppAnimations.medium,
-                  child: GlassContainer(
-                    backdropColor: AppColors.glassOverlayPurpleMed,
-                    shadows: AppAnimations.shadowGlow,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              return ScrollConfiguration(
+                behavior: const MaterialScrollBehavior().copyWith(
+                  overscroll: false,
+                ),
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Order #${order.id.substring(0, 8)}',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.accentTeal,
-                                  ),
+                            FadeInWidget(
+                              duration: AppAnimations.medium,
+                              child: GlassContainer(
+                                backdropColor: AppColors.glassOverlayPurpleDeep,
+                                shadows: AppAnimations.shadowGlow,
+                                borderRadius: AppAnimations.radiusXL,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Order #${order.id.substring(0, 8)}',
+                                              style: const TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.w800,
+                                                color: AppColors.accentTeal,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Table: ${order.tableNumber}',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColors
+                                                    .lightTextSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(
+                                              order.status,
+                                            ).withOpacity(0.16),
+                                            border: Border.all(
+                                              color: _getStatusColor(
+                                                order.status,
+                                              ),
+                                              width: 1.5,
+                                            ),
+                                            borderRadius:
+                                                AppAnimations.radiusCircle,
+                                          ),
+                                          child: Text(
+                                            order.status.toUpperCase(),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w800,
+                                              color: _getStatusColor(
+                                                order.status,
+                                              ),
+                                              letterSpacing: 1.0,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Table: ${order.tableNumber}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.lightTextSecondary,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                            const SizedBox(height: 20),
+                            GlassContainer(
+                              backdropColor: AppColors.glassOverlayBlackMed,
+                              borderRadius: AppAnimations.radiusXL,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Order Items',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.lightText,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ...items
+                                      .map((item) => _buildItemRow(item))
+                                      .toList(),
+                                ],
                               ),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(
-                                  order.status,
-                                ).withOpacity(0.2),
-                                border: Border.all(
-                                  color: _getStatusColor(order.status),
-                                  width: 2,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Bill Breakdown',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: AppColors.lightText,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            SlideInWidget(
+                              begin: const Offset(-0.5, 0),
+                              duration: AppAnimations.medium,
+                              child: _buildCalculationCard(
+                                'Subtotal',
+                                billingController.subtotal,
+                                AppColors.accentTeal,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SlideInWidget(
+                              begin: const Offset(-0.5, 0),
+                              duration: const Duration(milliseconds: 400),
+                              child: _buildCalculationCard(
+                                'Tax (GST)',
+                                billingController.gstAmount,
+                                AppColors.info,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SlideInWidget(
+                              begin: const Offset(-0.5, 0),
+                              duration: const Duration(milliseconds: 430),
+                              child: Obx(
+                                () => _buildCalculationCard(
+                                  'Service Charge',
+                                  billingController.serviceCharge,
+                                  AppColors.accentOrange,
                                 ),
-                                borderRadius: AppAnimations.radiusMedium,
                               ),
-                              child: Text(
-                                order.status.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: _getStatusColor(order.status),
+                            ),
+                            const SizedBox(height: 12),
+                            SlideInWidget(
+                              begin: const Offset(-0.5, 0),
+                              duration: const Duration(milliseconds: 450),
+                              child: _buildDiscountSection(billingController),
+                            ),
+                            const SizedBox(height: 12),
+                            FadeInWidget(
+                              duration: AppAnimations.slow,
+                              child: _buildTotalRow(
+                                billingController.totalAmount,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SlideInWidget(
+                              begin: const Offset(0, 0.5),
+                              duration: AppAnimations.medium,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Payment Method',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          color: AppColors.lightText,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildPaymentMethodChips(billingController),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SlideInWidget(
+                              begin: const Offset(0, 1),
+                              duration: AppAnimations.medium,
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: AppColors.gradientPrimaryTeal,
+                                    ),
+                                    borderRadius: AppAnimations.radiusLarge,
+                                    boxShadow: AppAnimations.shadowGlowTeal,
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () =>
+                                          _handlePayment(billingController),
+                                      borderRadius: AppAnimations.radiusLarge,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 18,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Column(
+                                              children: [
+                                                const Text(
+                                                  'Complete Payment',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Colors.white70,
+                                                  ),
+                                                ),
+                                                Obx(
+                                                  () => Text(
+                                                    '₹${billingController.totalAmount.toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                      fontSize: 22,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            GlassContainer(
+                              borderRadius: AppAnimations.radiusLarge,
+                              backdropColor: AppColors.glassOverlayBlackMed,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => billingController.printReceipt(),
+                                  borderRadius: AppAnimations.radiusLarge,
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 14),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.print,
+                                          color: AppColors.lightText,
+                                        ),
+                                        SizedBox(width: 12),
+                                        Text(
+                                          'Print Receipt',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.lightText,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Order Items
-                const Text(
-                  'Order Items',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 8),
-                ...items.map((item) => _buildItemRow(item)).toList(),
-                const Divider(thickness: 2),
-
-                // Calculations Section with Glass Cards
-                const SizedBox(height: 12),
-                Text(
-                  'Bill Breakdown',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppColors.lightText,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SlideInWidget(
-                  begin: const Offset(-0.5, 0),
-                  duration: AppAnimations.medium,
-                  child: _buildCalculationCard(
-                    'Subtotal',
-                    billingController.subtotal,
-                    Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SlideInWidget(
-                  begin: const Offset(-0.5, 0),
-                  duration: const Duration(milliseconds: 400),
-                  child: _buildCalculationCard(
-                    'Tax (GST)',
-                    billingController.gstAmount,
-                    AppColors.info,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SlideInWidget(
-                  begin: const Offset(-0.5, 0),
-                  duration: const Duration(milliseconds: 450),
-                  child: _buildDiscountSection(billingController),
-                ),
-                const SizedBox(height: 12),
-                FadeInWidget(
-                  duration: AppAnimations.slow,
-                  child: _buildTotalRow(billingController.totalAmount),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Payment Method Selection
-                SlideInWidget(
-                  begin: const Offset(0, 0.5),
-                  duration: AppAnimations.medium,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Payment Method',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppColors.lightText,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildPaymentMethodChips(billingController),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Action Buttons
-                SlideInWidget(
-                  begin: const Offset(0, 1),
-                  duration: AppAnimations.medium,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: AppColors.gradientPrimaryTeal,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: AppAnimations.radiusLarge,
-                        boxShadow: AppAnimations.shadowGlow,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => _handlePayment(billingController),
-                          borderRadius: AppAnimations.radiusLarge,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  children: [
-                                    const Text(
-                                      'Complete Payment',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                    Obx(
-                                      () => Text(
-                                        '₹${billingController.totalAmount.toStringAsFixed(2)}',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.lightBorder,
-                        width: 2,
-                      ),
-                      borderRadius: AppAnimations.radiusLarge,
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => billingController.printReceipt(),
-                        borderRadius: AppAnimations.radiusLarge,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.print, color: AppColors.lightText),
-                              SizedBox(width: 12),
-                              Text(
-                                'Print Receipt',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.lightText,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }),
+              );
+            }),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildItemRow(dynamic item) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.itemName,
-                  style: const TextStyle(fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if ((item.notes ?? '').isNotEmpty)
-                  Text(
-                    'Notes: ${item.notes}',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text('${item.quantity}x', style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 12),
-          CurrencyDisplay(
-            amount: item.totalPrice,
-            textStyle: const TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalculationRow(String label, double amount) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 14)),
-        CurrencyDisplay(
-          amount: amount,
-          textStyle: const TextStyle(fontSize: 14),
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.04),
+          borderRadius: AppAnimations.radiusLarge,
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
         ),
-      ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.itemName,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.lightText,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if ((item.notes ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Notes: ${item.notes}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.glassOverlayTeal,
+                borderRadius: AppAnimations.radiusCircle,
+              ),
+              child: Text(
+                '${item.quantity}x',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.accentTeal,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            CurrencyDisplay(
+              amount: item.totalPrice,
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppColors.lightText,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildDiscountSection(BillingController controller) {
     return GlassContainer(
-      backdropColor: AppColors.glassOverlayPurple,
+      backdropColor: AppColors.glassOverlayBlueMed,
       shadows: AppAnimations.shadowSmall,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +516,7 @@ class BillingScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.red,
+                    color: AppColors.error,
                   ),
                 ),
               ),
@@ -415,6 +537,8 @@ class BillingScreen extends StatelessWidget {
                         label:
                             '${controller.discountPercent.value.toStringAsFixed(1)}%',
                         onChanged: controller.applyPercentDiscount,
+                        activeColor: AppColors.accentTeal,
+                        inactiveColor: Colors.white24,
                       ),
                     ),
                     Container(
@@ -432,6 +556,42 @@ class BillingScreen extends StatelessWidget {
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: AppColors.accentTeal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Slider(
+                        value: controller.serviceChargePercent.value,
+                        min: 0,
+                        max: 15,
+                        divisions: 15,
+                        label:
+                            '${controller.serviceChargePercent.value.toStringAsFixed(0)}%',
+                        onChanged: controller.setServiceCharge,
+                        activeColor: AppColors.accentOrange,
+                        inactiveColor: Colors.white24,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.glassOverlayPurple,
+                        borderRadius: AppAnimations.radiusSmall,
+                      ),
+                      child: Text(
+                        'SC ${controller.serviceChargePercent.value.toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accentOrange,
                         ),
                       ),
                     ),

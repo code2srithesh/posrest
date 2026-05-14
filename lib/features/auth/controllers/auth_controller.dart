@@ -10,6 +10,13 @@ class AuthController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
+  void resetLoginForm() {
+    emailController.clear();
+    passwordController.clear();
+    errorMessage.value = '';
+    isPasswordVisible.value = false;
+  }
+
   Future<void> login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
       Get.snackbar(
@@ -31,6 +38,11 @@ class AuthController extends GetxController {
       );
 
       if (result['success']) {
+        final user = result['user'];
+        final targetRoute = AuthService.instance.getLandingRouteForRole(
+          user?.role ?? 'waiter',
+        );
+        resetLoginForm();
         Get.snackbar(
           'Success',
           '${result['message']}\nWelcome ${result['user']?.name}!',
@@ -38,7 +50,7 @@ class AuthController extends GetxController {
           colorText: Colors.white,
           duration: const Duration(seconds: 2),
         );
-        Get.offAllNamed('/tables');
+        Get.offAllNamed(targetRoute);
       } else {
         errorMessage.value = result['message'] ?? 'Login failed';
         Get.snackbar(

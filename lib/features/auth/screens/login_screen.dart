@@ -13,6 +13,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
+  late final AuthController _controller;
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -20,6 +23,9 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
+    _controller = Get.put(AuthController());
+    _controller.resetLoginForm();
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -45,6 +51,8 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   void dispose() {
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -52,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
-    final controller = Get.put(AuthController());
+    final controller = _controller;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -139,8 +147,7 @@ class _LoginScreenState extends State<LoginScreen>
                         // Glassmorphic login card
                         _buildGlassmorphicCard(controller, isMobile),
                         const SizedBox(height: 24),
-                        // Demo users info
-                        _buildDemoUsersSection(controller),
+                        _buildAuthActions(),
                       ],
                     ),
                   ),
@@ -201,6 +208,11 @@ class _LoginScreenState extends State<LoginScreen>
                 hint: 'admin@posrest.com',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                focusNode: _emailFocus,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(_passwordFocus);
+                },
               ),
               const SizedBox(height: 20),
               // Password field
@@ -211,6 +223,13 @@ class _LoginScreenState extends State<LoginScreen>
                   hint: 'Enter your password',
                   icon: Icons.lock_outlined,
                   obscureText: !controller.isPasswordVisible.value,
+                  focusNode: _passwordFocus,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) {
+                    if (!controller.isLoading.value) {
+                      controller.login();
+                    }
+                  },
                   suffixIcon: IconButton(
                     icon: Icon(
                       controller.isPasswordVisible.value
@@ -275,11 +294,17 @@ class _LoginScreenState extends State<LoginScreen>
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
     Widget? suffixIcon,
+    FocusNode? focusNode,
+    TextInputAction textInputAction = TextInputAction.done,
+    ValueChanged<String>? onSubmitted,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      focusNode: focusNode,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hint,
@@ -374,86 +399,23 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildDemoUsersSection(AuthController controller) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Text(
-                'Demo Accounts',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: [
-                  _buildDemoUserChip(
-                    'admin@posrest.com',
-                    'admin123',
-                    controller,
-                  ),
-                  _buildDemoUserChip(
-                    'manager@posrest.com',
-                    'manager123',
-                    controller,
-                  ),
-                  _buildDemoUserChip(
-                    'waiter@posrest.com',
-                    'waiter123',
-                    controller,
-                  ),
-                  _buildDemoUserChip('chef@posrest.com', 'chef123', controller),
-                ],
-              ),
-            ],
+  Widget _buildAuthActions() {
+    return Column(
+      children: [
+        Text(
+          'Login with email and password. Role-based access is applied automatically after sign in.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13),
+        ),
+        const SizedBox(height: 14),
+        TextButton(
+          onPressed: () => Get.toNamed('/register'),
+          child: const Text(
+            'Create an account',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDemoUserChip(
-    String email,
-    String password,
-    AuthController controller,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => controller.demoLogin(email, password),
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.3)),
-          ),
-          child: Text(
-            email.split('@')[0],
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
+      ],
     );
   }
 }

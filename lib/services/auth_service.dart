@@ -30,6 +30,12 @@ class AuthService {
     }
   }
 
+  Future<void> _ensureInitialized() async {
+    if (!_initialized) {
+      await initialize();
+    }
+  }
+
   // Create default demo users (only if database is empty)
   Future<void> _createDefaultUsers() async {
     try {
@@ -106,6 +112,8 @@ class AuthService {
   // Login user with real validation
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      await _ensureInitialized();
+
       // Validate inputs
       if (!PasswordService.isValidEmail(email)) {
         return {
@@ -141,7 +149,7 @@ class AuthService {
       if (!user.isActive) {
         return {
           'success': false,
-          'message': 'User account is inactive',
+          'message': 'Account is pending admin approval',
           'user': null,
         };
       }
@@ -173,6 +181,7 @@ class AuthService {
 
   // Logout user
   Future<void> logout() async {
+    await _ensureInitialized();
     _currentUser = null;
     await _prefs.remove(AppConstants.spAuthToken);
     await _prefs.remove(AppConstants.spUserId);
@@ -217,6 +226,7 @@ class AuthService {
 
   // Set user info
   Future<void> setUserInfo(String userId, String email, String role) async {
+    await _ensureInitialized();
     await _prefs.setString(AppConstants.spUserId, userId);
     await _prefs.setString(AppConstants.spUserEmail, email);
     await _prefs.setString(AppConstants.spUserRole, role);
@@ -235,6 +245,210 @@ class AuthService {
 
   // Get all available users (for testing)
   Future<List<UserModel>> getAllUsers() async {
+    await _ensureInitialized();
     return await _db.getAllUsers();
+  }
+
+  List<String> getAssignableRoles() {
+    return [
+      AppConstants.roleWaiter,
+      AppConstants.roleCashier,
+      AppConstants.roleChef,
+    ];
+  }
+
+  String getRoleLabel(String role) {
+    switch (role) {
+      case AppConstants.roleAdmin:
+        return 'Admin';
+      case AppConstants.roleManager:
+        return 'Manager';
+      case AppConstants.roleCashier:
+        return 'Cashier';
+      case AppConstants.roleWaiter:
+        return 'Waiter';
+      case AppConstants.roleChef:
+        return 'Kitchen Chef';
+      default:
+        return role;
+    }
+  }
+
+  String getLandingRouteForRole(String role) {
+    switch (role) {
+      case AppConstants.roleAdmin:
+        return '/admin/users';
+      case AppConstants.roleChef:
+        return '/kitchen';
+      case AppConstants.roleCashier:
+      case AppConstants.roleWaiter:
+      case AppConstants.roleManager:
+      default:
+        return '/tables';
+    }
+  }
+
+  Future<Map<String, dynamic>> registerUser({
+    required String name,
+    required String email,
+    required String password,
+    required String role,
+  }) async {
+    try {
+      await _ensureInitialized();
+
+      if (name.trim().isEmpty) {
+        return {'success': false, 'message': 'Name is required', 'user': null};
+      }
+
+      if (!PasswordService.isValidEmail(email)) {
+        return {
+          'success': false,
+          'message': 'Invalid email format',
+          'user': null,
+        };
+      }
+
+      if (!PasswordService.isValidPassword(password)) {
+        return {
+          'success': false,
+          'message': 'Password must be at least 6 characters',
+          'user': null,
+        };
+      }
+
+      if (!getAssignableRoles().contains(role)) {
+        return {
+          'success': false,
+          'message': 'Please choose waiter, cashier, or kitchen chef',
+          'user': null,
+        };
+      }
+
+      final users = await _db.getAllUsers();
+      final existing = users.where(
+        (user) => user.email.toLowerCase() == email.trim().toLowerCase(),
+      );
+      if (existing.isNotEmpty) {
+        return {
+          'success': false,
+          'message': 'An account with this email already exists',
+          'user': null,
+        };
+      }
+
+      final user = UserModel(
+        id: const Uuid().v4(),
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password: password,
+        role: role,
+        isActive: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        syncStatus: 'pending',
+      );
+
+      await _db.insertUser(user);
+      return {
+        'success': true,
+        'message': 'Registration submitted for admin approval',
+        'user': user,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Registration error: $e',
+        'user': null,
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> createUserByAdmin({
+    required String name,
+    required String email,
+    required String password,
+    required String role,
+    bool isActive = true,
+  }) async {
+    try {
+      final result = await registerUser(
+        name: name,
+        email: email,
+        password: password,
+        role: role,
+      );
+
+      if (result['success'] != true) {
+        return result;
+      }
+
+      final user = (result['user'] as UserModel).copyWith(
+        isActive: isActive,
+        syncStatus: isActive ? 'synced' : 'pending',
+        updatedAt: DateTime.now(),
+      );
+
+      await _db.updateUser(user);
+      return {
+        'success': true,
+        'message': isActive
+            ? 'User created and approved'
+            : 'User created and marked pending approval',
+        'user': user,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Create user error: $e',
+        'user': null,
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> approveUser(String userId) async {
+    try {
+      await _ensureInitialized();
+      final user = await _db.getUser(userId);
+      if (user == null) {
+        return {'success': false, 'message': 'User not found', 'user': null};
+      }
+
+      final approvedUser = user.copyWith(
+        isActive: true,
+        syncStatus: 'synced',
+        updatedAt: DateTime.now(),
+      );
+      await _db.updateUser(approvedUser);
+      return {
+        'success': true,
+        'message': 'User approved successfully',
+        'user': approvedUser,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Approval error: $e', 'user': null};
+    }
+  }
+
+  Future<Map<String, dynamic>> rejectUser(String userId) async {
+    try {
+      await _ensureInitialized();
+      final removed = await _db.deleteUser(userId);
+      return {
+        'success': removed > 0,
+        'message': removed > 0 ? 'User rejected and removed' : 'User not found',
+        'user': null,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Rejection error: $e', 'user': null};
+    }
+  }
+
+  Future<List<UserModel>> getPendingUsers() async {
+    await _ensureInitialized();
+    final users = await _db.getAllUsers();
+    return users
+        .where((user) => !user.isActive && user.role != AppConstants.roleAdmin)
+        .toList();
   }
 }

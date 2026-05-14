@@ -72,9 +72,7 @@ class OrderController extends GetxController {
       final order = await orderRepository.getOrderById(orderId);
       if (order != null) {
         currentOrder.value = order;
-        // Load order items from database
-        // For now, we'll initialize with empty items
-        currentOrderItems.clear();
+        currentOrderItems.assignAll(order.items);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load order: $e');
@@ -168,6 +166,7 @@ class OrderController extends GetxController {
   void _updateOrderTotals() {
     if (currentOrder.value != null) {
       final updated = currentOrder.value!.copyWith(
+        items: currentOrderItems.toList(),
         subtotal: subtotal,
         taxAmount: taxAmount,
         totalAmount: totalAmount,
@@ -183,13 +182,20 @@ class OrderController extends GetxController {
 
       isLoading.value = true;
 
-      // Save order items
-      for (final _ in currentOrderItems) {
-        // TODO: Save to database
-      }
+      final orderWithItems = currentOrder.value!.copyWith(
+        items: currentOrderItems.toList(),
+        subtotal: subtotal,
+        taxAmount: taxAmount,
+        totalAmount: totalAmount,
+        updatedAt: DateTime.now(),
+      );
 
-      // Update order
-      await orderRepository.updateOrder(currentOrder.value!);
+      await orderRepository.replaceOrderItems(
+        orderWithItems.id,
+        currentOrderItems.toList(),
+      );
+      await orderRepository.updateOrder(orderWithItems);
+      currentOrder.value = orderWithItems;
       Get.snackbar('Success', 'Order saved successfully');
     } catch (e) {
       Get.snackbar('Error', 'Failed to save order: $e');
@@ -205,6 +211,10 @@ class OrderController extends GetxController {
       isLoading.value = true;
 
       final updated = currentOrder.value!.copyWith(
+        items: currentOrderItems.toList(),
+        subtotal: subtotal,
+        taxAmount: taxAmount,
+        totalAmount: totalAmount,
         status: AppConstants.orderStatusPreparing,
         updatedAt: DateTime.now(),
       );

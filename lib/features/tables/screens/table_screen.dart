@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/themes/app_theme.dart';
+import '../../../core/themes/app_animations.dart';
+import '../../../core/themes/app_colors.dart';
 import '../../../core/widgets/custom_widgets.dart';
+import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../services/auth_service.dart';
@@ -15,13 +17,29 @@ class TableScreen extends StatelessWidget {
     final controller = Get.put(TableController());
 
     return Scaffold(
-      backgroundColor: AppTheme.bgColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Tables'),
         elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: AppColors.gradientDarkOLED,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.logout),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
           onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+              return;
+            }
+
             AuthService().logout().then((_) {
               Get.offAllNamed('/login');
             });
@@ -29,138 +47,322 @@ class TableScreen extends StatelessWidget {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Center(
               child: Obx(
-                () => Text(
-                  'Occupied: ${controller.getTablesCount(AppConstants.statusOccupied)}/${controller.tables.length}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                () => GlassContainer(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  borderRadius: AppAnimations.radiusCircle,
+                  backdropColor: AppColors.glassOverlayTealDeep,
+                  shadows: AppAnimations.shadowGlowTeal,
+                  child: Text(
+                    'Occupied ${controller.getTablesCount(AppConstants.statusOccupied)}/${controller.tables.length}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
           const ThemeToggleButton(compact: true),
+          IconButton(
+            tooltip: 'Logout',
+            onPressed: () {
+              AuthService().logout().then((_) {
+                Get.offAllNamed('/login');
+              });
+            },
+            icon: const Icon(Icons.logout),
+          ),
+          const SizedBox(width: 6),
         ],
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const LoadingIndicator(message: 'Loading tables...');
-        }
-
-        if (controller.tables.isEmpty) {
-          return EmptyStateWidget(
-            icon: Icons.table_restaurant_outlined,
-            title: 'No Tables',
-            message: 'Create your first table to get started',
-            action: PrimaryButton(
-              label: 'Create Table',
-              width: 200,
-              onPressed: () => _showCreateTableDialog(context, controller),
-            ),
-          );
-        }
-
-        return Column(
+      body: AnimatedGradientBG(
+        colors: const [
+          AppColors.gradientStart,
+          AppColors.primaryDark,
+          AppColors.gradientEnd,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        child: Stack(
           children: [
-            // Filter and Action Bar
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          FilterChip(
-                            label: const Text('All'),
-                            selected: controller.filterStatus.value.isEmpty,
-                            onSelected: (selected) {
-                              controller.filterStatus.value = '';
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          FilterChip(
-                            label: Text(
-                              'Free (${controller.getTablesCount(AppConstants.statusFree)})',
-                            ),
-                            selected:
-                                controller.filterStatus.value ==
-                                AppConstants.statusFree,
-                            onSelected: (selected) {
-                              controller.filterStatus.value =
-                                  AppConstants.statusFree;
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          FilterChip(
-                            label: Text(
-                              'Occupied (${controller.getTablesCount(AppConstants.statusOccupied)})',
-                            ),
-                            selected:
-                                controller.filterStatus.value ==
-                                AppConstants.statusOccupied,
-                            onSelected: (selected) {
-                              controller.filterStatus.value =
-                                  AppConstants.statusOccupied;
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          FilterChip(
-                            label: Text(
-                              'Reserved (${controller.getTablesCount(AppConstants.statusReserved)})',
-                            ),
-                            selected:
-                                controller.filterStatus.value ==
-                                AppConstants.statusReserved,
-                            onSelected: (selected) {
-                              controller.filterStatus.value =
-                                  AppConstants.statusReserved;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+            Positioned(
+              top: -80,
+              right: -70,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accentTeal.withOpacity(0.18),
+                      Colors.transparent,
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  FloatingActionButton.small(
-                    onPressed: () =>
-                        _showCreateTableDialog(context, controller),
-                    tooltip: 'Add Table',
-                    child: const Icon(Icons.add),
-                  ),
-                ],
-              ),
-            ),
-
-            // Tables Grid
-            Expanded(
-              child: Obx(
-                () => GridView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.85,
-                  ),
-                  itemCount: controller.getFilteredTables().length,
-                  itemBuilder: (context, index) {
-                    final table = controller.getFilteredTables()[index];
-                    return _buildTableCard(context, table, controller);
-                  },
                 ),
               ),
             ),
+            Positioned(
+              bottom: -90,
+              left: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.16),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Obx(() {
+              if (controller.isLoading.value) {
+                return const LoadingIndicator(message: 'Loading tables...');
+              }
+
+              if (controller.tables.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: GlassContainer(
+                    backdropColor: AppColors.glassOverlayPurpleDeep,
+                    shadows: AppAnimations.shadowGlow,
+                    child: EmptyStateWidget(
+                      icon: Icons.table_restaurant_outlined,
+                      title: 'No Tables',
+                      message: 'Create your first table to get started',
+                      action: PrimaryButton(
+                        label: 'Create Table',
+                        width: 200,
+                        onPressed: () =>
+                            _showCreateTableDialog(context, controller),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: GlassContainer(
+                        backdropColor: AppColors.glassOverlayPurpleDeep,
+                        shadows: AppAnimations.shadowGlow,
+                        borderRadius: AppAnimations.radiusXL,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: AppColors.gradientPrimaryTeal,
+                                    ),
+                                    borderRadius: AppAnimations.radiusMedium,
+                                  ),
+                                  child: const Icon(
+                                    Icons.table_restaurant,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Next Gen Table Matrix',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              color: AppColors.lightText,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Glassmorphic live floor plan with animated status cards',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color:
+                                                  AppColors.lightTextSecondary,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                FloatingActionButton.small(
+                                  backgroundColor: AppColors.accentTeal,
+                                  onPressed: () => _showCreateTableDialog(
+                                    context,
+                                    controller,
+                                  ),
+                                  tooltip: 'Add Table',
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildMetricTile(
+                                    'Free',
+                                    controller.getTablesCount(
+                                      AppConstants.statusFree,
+                                    ),
+                                    AppColors.success,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _buildMetricTile(
+                                    'Occupied',
+                                    controller.getTablesCount(
+                                      AppConstants.statusOccupied,
+                                    ),
+                                    AppColors.error,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _buildMetricTile(
+                                    'Reserved',
+                                    controller.getTablesCount(
+                                      AppConstants.statusReserved,
+                                    ),
+                                    AppColors.warning,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: GlassContainer(
+                        backdropColor: AppColors.glassOverlayBlackMed,
+                        borderRadius: AppAnimations.radiusXL,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildFilterPill(
+                                label: 'All',
+                                selected: controller.filterStatus.value.isEmpty,
+                                onTap: () => controller.filterStatus.value = '',
+                              ),
+                              _buildFilterPill(
+                                label:
+                                    'Free (${controller.getTablesCount(AppConstants.statusFree)})',
+                                selected:
+                                    controller.filterStatus.value ==
+                                    AppConstants.statusFree,
+                                onTap: () => controller.filterStatus.value =
+                                    AppConstants.statusFree,
+                              ),
+                              _buildFilterPill(
+                                label:
+                                    'Occupied (${controller.getTablesCount(AppConstants.statusOccupied)})',
+                                selected:
+                                    controller.filterStatus.value ==
+                                    AppConstants.statusOccupied,
+                                onTap: () => controller.filterStatus.value =
+                                    AppConstants.statusOccupied,
+                              ),
+                              _buildFilterPill(
+                                label:
+                                    'Reserved (${controller.getTablesCount(AppConstants.statusReserved)})',
+                                selected:
+                                    controller.filterStatus.value ==
+                                    AppConstants.statusReserved,
+                                onTap: () => controller.filterStatus.value =
+                                    AppConstants.statusReserved,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final width = constraints.maxWidth;
+                          final crossAxisCount = width >= 1280
+                              ? 5
+                              : width >= 980
+                              ? 4
+                              : width >= 680
+                              ? 3
+                              : 2;
+                          final aspectRatio = width < 680 ? 0.78 : 0.9;
+
+                          return GridView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  mainAxisSpacing: 14,
+                                  crossAxisSpacing: 14,
+                                  childAspectRatio: aspectRatio,
+                                ),
+                            itemCount: controller.getFilteredTables().length,
+                            itemBuilder: (context, index) {
+                              final table = controller.getFilteredTables()[index];
+                              return SlideInWidget(
+                                begin: const Offset(0, 0.12),
+                                duration: Duration(
+                                  milliseconds: 280 + index * 40,
+                                ),
+                                child: FadeInWidget(
+                                  duration: Duration(
+                                    milliseconds: 320 + index * 40,
+                                  ),
+                                  child: _buildTableCard(
+                                    context,
+                                    table,
+                                    controller,
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ],
-        );
-      }),
+        ),
+      ),
     );
   }
 
@@ -169,30 +371,30 @@ class TableScreen extends StatelessWidget {
     dynamic table,
     TableController controller,
   ) {
-    Color bgColor;
-    Color iconColor;
-    Color textColor;
+    Color accentColor;
+    Color glowColor;
+    String statusLabel;
 
     switch (table.status) {
       case 'free':
-        bgColor = AppTheme.tableFreeBg;
-        iconColor = AppTheme.tableFreeIcon;
-        textColor = AppTheme.tableFreeIcon;
+        accentColor = AppColors.success;
+        glowColor = AppColors.success.withOpacity(0.28);
+        statusLabel = 'FREE';
         break;
       case 'occupied':
-        bgColor = AppTheme.tableOccupiedBg;
-        iconColor = AppTheme.tableOccupiedIcon;
-        textColor = AppTheme.tableOccupiedIcon;
+        accentColor = AppColors.error;
+        glowColor = AppColors.error.withOpacity(0.28);
+        statusLabel = 'OCCUPIED';
         break;
       case 'reserved':
-        bgColor = AppTheme.tableReservedBg;
-        iconColor = AppTheme.tableReservedIcon;
-        textColor = AppTheme.tableReservedIcon;
+        accentColor = AppColors.warning;
+        glowColor = AppColors.warning.withOpacity(0.28);
+        statusLabel = 'RESERVED';
         break;
       default:
-        bgColor = AppTheme.bgColor;
-        iconColor = AppTheme.textSecondary;
-        textColor = AppTheme.textSecondary;
+        accentColor = AppColors.lightTextSecondary;
+        glowColor = AppColors.lightTextSecondary.withOpacity(0.18);
+        statusLabel = table.status.toUpperCase();
     }
 
     return GestureDetector(
@@ -210,46 +412,188 @@ class TableScreen extends StatelessWidget {
           );
         }
       },
-      child: PosCard(
-        backgroundColor: bgColor,
-        isSelected: false,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.table_restaurant, size: 32, color: iconColor),
-            const SizedBox(height: 8),
-            Text(
-              'Table ${table.tableNumber}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-              ),
+      child: GlassContainer(
+        interactive: true,
+        borderRadius: AppAnimations.radiusXL,
+        backdropColor: AppColors.glassOverlayPurpleDeep,
+        shadows: [
+          BoxShadow(
+            color: glowColor,
+            blurRadius: 22,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: AppAnimations.radiusXL,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.08),
+                glowColor.withOpacity(0.14),
+                Colors.white.withOpacity(0.03),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              '${table.occupiedSeats}/${table.capacity} seats',
-              style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.7)),
-            ),
-            const SizedBox(height: 12),
-            StatusBadge(status: table.status),
-            if (table.status == AppConstants.statusOccupied)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Chip(
-                  label: const Text(
-                    'Open Order',
-                    style: TextStyle(fontSize: 10),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [accentColor.withOpacity(0.35), accentColor],
                   ),
-                  backgroundColor: iconColor.withOpacity(0.2),
-                  labelStyle: TextStyle(
-                    color: iconColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withOpacity(0.28),
+                      blurRadius: 18,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.table_restaurant,
+                  size: 28,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Table ${table.tableNumber}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.lightText,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${table.occupiedSeats}/${table.capacity} seats',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.lightTextSecondary,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.14),
+                  borderRadius: AppAnimations.radiusCircle,
+                  border: Border.all(color: accentColor.withOpacity(0.4)),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: TextStyle(
+                    color: accentColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
                   ),
                 ),
               ),
-          ],
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: AppAnimations.radiusCircle,
+                child: LinearProgressIndicator(
+                  minHeight: 6,
+                  value: table.capacity == 0
+                      ? 0
+                      : table.occupiedSeats / table.capacity,
+                  backgroundColor: Colors.white.withOpacity(0.08),
+                  valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                ),
+              ),
+              if (table.status == AppConstants.statusOccupied)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: AppColors.gradientPrimaryTeal,
+                      ),
+                      borderRadius: AppAnimations.radiusCircle,
+                    ),
+                    child: const Text(
+                      'Open Order',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricTile(String label, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: AppAnimations.radiusLarge,
+        border: Border.all(color: color.withOpacity(0.28)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            '$count',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.lightTextSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPill({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onTap(),
+        backgroundColor: Colors.white.withOpacity(0.05),
+        selectedColor: AppColors.accentTeal.withOpacity(0.2),
+        labelStyle: TextStyle(
+          color: selected ? AppColors.accentTeal : AppColors.lightTextSecondary,
+          fontWeight: FontWeight.w700,
+        ),
+        side: BorderSide(
+          color: selected
+              ? AppColors.accentTeal
+              : Colors.white.withOpacity(0.1),
         ),
       ),
     );
@@ -264,27 +608,49 @@ class TableScreen extends StatelessWidget {
 
     Get.dialog(
       Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: AppAnimations.radiusXL,
+          backdropColor: AppColors.glassOverlayPurpleDeep,
+          shadows: AppAnimations.shadowGlow,
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Create New Table',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: AppColors.gradientPrimaryTeal,
+                      ),
+                      borderRadius: AppAnimations.radiusMedium,
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Create New Table',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.lightText,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: tableNumberController,
                 decoration: InputDecoration(
                   labelText: 'Table Number',
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.06),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 keyboardType: TextInputType.number,
@@ -294,8 +660,10 @@ class TableScreen extends StatelessWidget {
                 controller: capacityController,
                 decoration: InputDecoration(
                   labelText: 'Capacity (seats)',
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.06),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 keyboardType: TextInputType.number,

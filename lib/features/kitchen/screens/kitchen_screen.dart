@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_animations.dart';
-import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../../../services/auth_service.dart';
@@ -16,6 +15,7 @@ class KitchenScreen extends StatelessWidget {
     final kitchenController = Get.put(KitchenController());
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,105 +40,141 @@ class KitchenScreen extends StatelessWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          tooltip: 'Back',
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+              return;
+            }
+
+            AuthService().logout().then((_) => Get.offAllNamed('/login'));
+          },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => kitchenController.refreshOrders(),
           ),
+          IconButton(
+            tooltip: 'Logout',
+            onPressed: () =>
+                AuthService().logout().then((_) => Get.offAllNamed('/login')),
+            icon: const Icon(Icons.logout),
+          ),
           const ThemeToggleButton(compact: true),
         ],
       ),
-      body: Obx(() {
-        if (kitchenController.isLoading.value) {
-          return Center(
-            child: RotateWidget(
-              duration: AppAnimations.slow,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: AppColors.gradientBluePurple,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.restaurant_menu,
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ),
-            ),
-          );
-        }
-
-        if (kitchenController.allOrders.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
+      body: AnimatedGradientBG(
+        colors: const [
+          AppColors.gradientStart,
+          AppColors.primaryDark,
+          AppColors.gradientEnd,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        child: Obx(() {
+          if (kitchenController.isLoading.value) {
+            return Center(
+              child: RotateWidget(
+                duration: AppAnimations.slow,
+                child: Container(
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: AppColors.gradientBluePurple,
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
-                    Icons.done_all,
+                    Icons.restaurant_menu,
                     color: Colors.white,
-                    size: 50,
+                    size: 40,
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'No Pending Orders',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.lightText,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Kitchen all caught up! 🎉',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.lightTextSecondary,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 0.85,
-          ),
-          itemCount: kitchenController.allOrders.length,
-          itemBuilder: (context, index) {
-            final order = kitchenController.allOrders[index];
-            return SlideInWidget(
-              begin: Offset((index % 2) * 0.5 - 0.25, (index ~/ 2) * 0.3),
-              duration: Duration(milliseconds: 300 + (index * 50)),
-              child: _buildOrderCard(context, order, kitchenController),
+              ),
             );
-          },
-        );
-      }),
+          }
+
+          if (kitchenController.allOrders.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: AppColors.gradientBluePurple,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(
+                      Icons.done_all,
+                      color: Colors.white,
+                      size: 50,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'No Pending Orders',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.lightText,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Kitchen all caught up! 🎉',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.lightTextSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final crossAxisCount = width >= 1380
+                  ? 4
+                  : width >= 1040
+                  ? 3
+                  : width >= 720
+                  ? 2
+                  : 1;
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: width < 720 ? 1.15 : 0.85,
+                ),
+                itemCount: kitchenController.allOrders.length,
+                itemBuilder: (context, index) {
+                  final order = kitchenController.allOrders[index];
+                  return SlideInWidget(
+                    begin: Offset((index % 2) * 0.5 - 0.25, (index ~/ 2) * 0.3),
+                    duration: Duration(milliseconds: 300 + (index * 50)),
+                    child: _buildOrderCard(context, order, kitchenController),
+                  );
+                },
+              );
+            },
+          );
+        }),
+      ),
     );
   }
 

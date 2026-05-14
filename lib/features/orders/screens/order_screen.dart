@@ -8,7 +8,6 @@ import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../features/menu/controllers/menu_controller.dart' as menu_ctrl;
-import '../../../services/auth_service.dart';
 import '../controllers/order_controller.dart';
 
 class OrderScreen extends StatelessWidget {
@@ -32,7 +31,7 @@ class OrderScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.bgColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,11 +44,16 @@ class OrderScreen extends StatelessWidget {
             ),
           ],
         ),
-        elevation: 8,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: AppColors.gradientPrimaryTeal,
+              colors: const [
+                AppColors.primaryDark,
+                AppColors.primary,
+                AppColors.accentBlue,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -57,7 +61,15 @@ class OrderScreen extends StatelessWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          tooltip: 'Back',
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+              return;
+            }
+
+            Get.offAllNamed('/tables');
+          },
         ),
         actions: [
           Padding(
@@ -94,174 +106,203 @@ class OrderScreen extends StatelessWidget {
           return const LoadingIndicator(message: 'Loading...');
         }
 
-        return Row(
-          children: [
-            // Menu Section (Left)
-            Expanded(
-              flex: 3,
-              child: Column(
-                children: [
-                  // Category Tabs
-                  SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      itemCount: menuController.categories.length,
-                      itemBuilder: (context, index) {
-                        final category = menuController.categories[index];
-                        final isSelected =
-                            menuController.selectedCategoryId.value ==
-                            category.id;
+        return AnimatedGradientBG(
+          colors: const [
+            AppColors.gradientStart,
+            AppColors.primaryDark,
+            AppColors.gradientEnd,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          child: Stack(
+            children: [
+              Positioned(
+                top: -90,
+                right: -70,
+                child: Container(
+                  width: 220,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.accentTeal.withOpacity(0.16),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -80,
+                left: -80,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.14),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isCompact = constraints.maxWidth < 1100;
+                    final menuGridCount = constraints.maxWidth >= 1300
+                        ? 4
+                        : constraints.maxWidth >= 980
+                        ? 3
+                        : 2;
 
-                        return SlideInWidget(
-                          begin: Offset((index - 0.5) * 0.2, 0),
-                          duration: Duration(milliseconds: 300 + (index * 50)),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: GlassContainer(
-                              backdropColor: isSelected
-                                  ? AppColors.glassOverlayTealMed
-                                  : AppColors.glassOverlayPurple,
-                              shadows: isSelected
-                                  ? AppAnimations.shadowGlowTeal
-                                  : AppAnimations.shadowSmall,
-                              interactive: true,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    menuController.loadItemsByCategory(
-                                      category.id,
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          _getCategoryIcon(category.name),
-                                          size: 18,
-                                          color: isSelected
-                                              ? AppColors.accentTeal
-                                              : AppColors.lightTextTertiary,
+                    return Flex(
+                      direction: isCompact ? Axis.vertical : Axis.horizontal,
+                      children: [
+                    // Menu Section (Left)
+                    Expanded(
+                      flex: isCompact ? 3 : 3,
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 66,
+                            child: ScrollConfiguration(
+                              behavior: const MaterialScrollBehavior().copyWith(
+                                overscroll: false,
+                              ),
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                child: ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  scrollDirection: Axis.horizontal,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  itemCount: menuController.categories.length,
+                                  itemBuilder: (context, index) {
+                                    final category =
+                                        menuController.categories[index];
+                                    final isSelected =
+                                        menuController
+                                            .selectedCategoryId
+                                            .value ==
+                                        category.id;
+
+                                    return SlideInWidget(
+                                      begin: Offset((index - 0.5) * 0.2, 0),
+                                      duration: Duration(
+                                        milliseconds: 300 + (index * 50),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          category.name,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: isSelected
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                            color: isSelected
-                                                ? AppColors.accentTeal
-                                                : AppColors.lightTextSecondary,
+                                        child: GlassContainer(
+                                          backdropColor: isSelected
+                                              ? AppColors.glassOverlayTealMed
+                                              : AppColors.glassOverlayPurple,
+                                          shadows: isSelected
+                                              ? AppAnimations.shadowGlowTeal
+                                              : AppAnimations.shadowSmall,
+                                          interactive: true,
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              onTap: () {
+                                                menuController
+                                                    .loadItemsByCategory(
+                                                      category.id,
+                                                    );
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 12,
+                                                    ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      _getCategoryIcon(
+                                                        category.name,
+                                                      ),
+                                                      size: 18,
+                                                      color: isSelected
+                                                          ? AppColors.accentTeal
+                                                          : AppColors
+                                                                .lightTextTertiary,
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      category.name,
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight: isSelected
+                                                            ? FontWeight.w700
+                                                            : FontWeight.w600,
+                                                        color: isSelected
+                                                            ? AppColors
+                                                                  .accentTeal
+                                                            : AppColors
+                                                                  .lightTextSecondary,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  // Menu Items Grid
-                  Expanded(
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(12),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 0.75,
-                          ),
-                      itemCount: menuController.menuItems.length,
-                      itemBuilder: (context, index) {
-                        final item = menuController.menuItems[index];
-                        return SlideInWidget(
-                          begin: Offset(
-                            index.isEven ? -0.2 : 0.2,
-                            (index ~/ 2) * 0.1,
-                          ),
-                          duration: Duration(milliseconds: 350 + (index * 50)),
-                          child: _buildMenuItemCard(
-                            item,
-                            orderController,
-                            context,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Order Cart Section (Right)
-            Expanded(
-              flex: 2,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.darkCard,
-                  border: Border(
-                    left: BorderSide(color: AppColors.darkBorder, width: 2),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    // Cart Header with gradient
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary,
-                            AppColors.accentGradient2,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: AppAnimations.shadowGlow,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Current Order',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Obx(
-                            () => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                          Expanded(
+                            child: ScrollConfiguration(
+                              behavior: const MaterialScrollBehavior().copyWith(
+                                overscroll: false,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: AppAnimations.radiusSmall,
-                              ),
-                              child: Text(
-                                '${orderController.currentOrderItems.length} items',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                child: GridView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: const EdgeInsets.all(12),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: menuGridCount,
+                                        mainAxisSpacing: 12,
+                                        crossAxisSpacing: 12,
+                                        childAspectRatio: 0.77,
+                                      ),
+                                  itemCount: menuController.menuItems.length,
+                                  itemBuilder: (context, index) {
+                                    final item =
+                                        menuController.menuItems[index];
+                                    return SlideInWidget(
+                                      begin: Offset(
+                                        index.isEven ? -0.2 : 0.2,
+                                        (index ~/ 2) * 0.1,
+                                      ),
+                                      duration: Duration(
+                                        milliseconds: 350 + (index * 50),
+                                      ),
+                                      child: _buildMenuItemCard(
+                                        item,
+                                        orderController,
+                                        context,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -269,119 +310,208 @@ class OrderScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Items List
                     Expanded(
-                      child: Obx(() {
-                        if (orderController.currentOrderItems.isEmpty) {
-                          return const Center(
-                            child: Text(
-                              'No items added yet',
-                              style: TextStyle(color: AppTheme.textSecondary),
-                            ),
-                          );
-                        }
+                      flex: isCompact ? 2 : 2,
+                      child: Container(
+                        margin: isCompact
+                            ? const EdgeInsets.fromLTRB(10, 0, 10, 10)
+                            : const EdgeInsets.fromLTRB(0, 10, 10, 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.darkCard.withOpacity(0.7),
+                          borderRadius: AppAnimations.radiusXL,
+                          border: Border.all(color: AppColors.darkBorder),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: AppAnimations.radiusXL,
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      AppColors.primary,
+                                      AppColors.accentGradient2,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  boxShadow: AppAnimations.shadowGlow,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Current Order',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    Obx(
+                                      () => Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.2),
+                                          borderRadius:
+                                              AppAnimations.radiusSmall,
+                                        ),
+                                        child: Text(
+                                          '${orderController.currentOrderItems.length} items',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Obx(() {
+                                  if (orderController
+                                      .currentOrderItems
+                                      .isEmpty) {
+                                    return const Center(
+                                      child: Text(
+                                        'No items added yet',
+                                        style: TextStyle(
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                    );
+                                  }
 
-                        return ListView.builder(
-                          padding: const EdgeInsets.all(8),
-                          itemCount: orderController.currentOrderItems.length,
-                          itemBuilder: (context, index) {
-                            final item =
-                                orderController.currentOrderItems[index];
-                            return _buildOrderItemTile(
-                              item,
-                              index,
-                              orderController,
-                            );
-                          },
-                        );
-                      }),
-                    ),
-                    // Totals Section
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: AppTheme.borderColor),
+                                  return ScrollConfiguration(
+                                    behavior: const MaterialScrollBehavior()
+                                        .copyWith(overscroll: false),
+                                    child: Scrollbar(
+                                      thumbVisibility: true,
+                                      child: ListView.builder(
+                                        physics: const BouncingScrollPhysics(),
+                                        padding: const EdgeInsets.all(8),
+                                        itemCount: orderController
+                                            .currentOrderItems
+                                            .length,
+                                        itemBuilder: (context, index) {
+                                          final item = orderController
+                                              .currentOrderItems[index];
+                                          return _buildOrderItemTile(
+                                            item,
+                                            index,
+                                            orderController,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.12),
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: AppTheme.borderColor,
+                                    ),
+                                  ),
+                                ),
+                                child: Obx(
+                                  () => Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Subtotal:',
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          CurrencyDisplay(
+                                            amount: orderController.subtotal,
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Tax (${AppConstants.currencySymbol}):',
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          CurrencyDisplay(
+                                            amount: orderController.taxAmount,
+                                          ),
+                                        ],
+                                      ),
+                                      const Divider(height: 16),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Total:',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          CurrencyDisplay(
+                                            amount: orderController.totalAmount,
+                                            textStyle: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.primaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Action Buttons
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: SecondaryButton(
+                                              label: 'Cancel',
+                                              onPressed: () => Get.back(),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: PrimaryButton(
+                                              label: 'Send to Kitchen',
+                                              onPressed: () => orderController
+                                                  .completeOrder(),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: Obx(
-                        () => Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Subtotal:',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                CurrencyDisplay(
-                                  amount: orderController.subtotal,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Tax (${AppConstants.currencySymbol}):',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                CurrencyDisplay(
-                                  amount: orderController.taxAmount,
-                                ),
-                              ],
-                            ),
-                            const Divider(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Total:',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                CurrencyDisplay(
-                                  amount: orderController.totalAmount,
-                                  textStyle: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            // Action Buttons
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: SecondaryButton(
-                                    label: 'Cancel',
-                                    onPressed: () => Get.back(),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: PrimaryButton(
-                                    label: 'Send to Kitchen',
-                                    onPressed: () =>
-                                        orderController.completeOrder(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       }),
     );

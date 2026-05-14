@@ -43,7 +43,7 @@ class AppTheme {
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: AppColors.lightBg,
-    fontFamily: GoogleFonts.poppins().fontFamily,
+    fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
     textTheme: _buildLightTextTheme(),
     appBarTheme: _buildLightAppBarTheme(),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -84,8 +84,13 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.error),
       ),
-      labelStyle: GoogleFonts.poppins(color: AppColors.lightTextSecondary),
-      hintStyle: GoogleFonts.poppins(color: AppColors.lightTextTertiary),
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: AppColors.lightTextSecondary,
+        fontWeight: FontWeight.w500,
+      ),
+      hintStyle: GoogleFonts.plusJakartaSans(
+        color: AppColors.lightTextTertiary,
+      ),
     ),
     cardTheme: CardThemeData(
       color: AppColors.lightCard,
@@ -109,7 +114,7 @@ class AppTheme {
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: AppColors.darkBg,
-    fontFamily: GoogleFonts.poppins().fontFamily,
+    fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
     textTheme: _buildDarkTextTheme(),
     appBarTheme: _buildDarkAppBarTheme(),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -150,8 +155,11 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.error),
       ),
-      labelStyle: GoogleFonts.poppins(color: AppColors.darkTextSecondary),
-      hintStyle: GoogleFonts.poppins(color: AppColors.darkTextTertiary),
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: AppColors.darkTextSecondary,
+        fontWeight: FontWeight.w500,
+      ),
+      hintStyle: GoogleFonts.plusJakartaSans(color: AppColors.darkTextTertiary),
     ),
     cardTheme: CardThemeData(
       color: AppColors.darkCard,
@@ -163,54 +171,54 @@ class AppTheme {
   // ============ TEXT THEMES ============
   static TextTheme _buildLightTextTheme() {
     return TextTheme(
-      displayLarge: GoogleFonts.poppins(
+      displayLarge: GoogleFonts.sora(
         fontSize: 32,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         color: AppColors.lightText,
       ),
-      displayMedium: GoogleFonts.poppins(
+      displayMedium: GoogleFonts.sora(
         fontSize: 28,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         color: AppColors.lightText,
       ),
-      displaySmall: GoogleFonts.poppins(
+      displaySmall: GoogleFonts.sora(
         fontSize: 24,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         color: AppColors.lightText,
       ),
-      headlineSmall: GoogleFonts.poppins(
+      headlineSmall: GoogleFonts.sora(
         fontSize: 20,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         color: AppColors.lightText,
       ),
-      titleLarge: GoogleFonts.poppins(
+      titleLarge: GoogleFonts.plusJakartaSans(
         fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: AppColors.lightText,
+      ),
+      titleMedium: GoogleFonts.plusJakartaSans(
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         color: AppColors.lightText,
       ),
-      titleMedium: GoogleFonts.poppins(
+      titleSmall: GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: AppColors.lightText,
+      ),
+      bodyLarge: GoogleFonts.plusJakartaSans(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.lightText,
       ),
-      titleSmall: GoogleFonts.poppins(
+      bodyMedium: GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: AppColors.lightText,
-      ),
-      bodyLarge: GoogleFonts.poppins(
-        fontSize: 16,
-        fontWeight: FontWeight.normal,
-        color: AppColors.lightText,
-      ),
-      bodyMedium: GoogleFonts.poppins(
-        fontSize: 14,
-        fontWeight: FontWeight.normal,
         color: AppColors.lightTextSecondary,
       ),
-      bodySmall: GoogleFonts.poppins(
+      bodySmall: GoogleFonts.plusJakartaSans(
         fontSize: 12,
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
         color: AppColors.lightTextTertiary,
       ),
     );
@@ -218,54 +226,54 @@ class AppTheme {
 
   static TextTheme _buildDarkTextTheme() {
     return TextTheme(
-      displayLarge: GoogleFonts.poppins(
+      displayLarge: GoogleFonts.sora(
         fontSize: 32,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         color: AppColors.darkText,
       ),
-      displayMedium: GoogleFonts.poppins(
+      displayMedium: GoogleFonts.sora(
         fontSize: 28,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         color: AppColors.darkText,
       ),
-      displaySmall: GoogleFonts.poppins(
+      displaySmall: GoogleFonts.sora(
         fontSize: 24,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         color: AppColors.darkText,
       ),
-      headlineSmall: GoogleFonts.poppins(
+      headlineSmall: GoogleFonts.sora(
         fontSize: 20,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         color: AppColors.darkText,
       ),
-      titleLarge: GoogleFonts.poppins(
+      titleLarge: GoogleFonts.plusJakartaSans(
         fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: AppColors.darkText,
+      ),
+      titleMedium: GoogleFonts.plusJakartaSans(
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         color: AppColors.darkText,
       ),
-      titleMedium: GoogleFonts.poppins(
+      titleSmall: GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: AppColors.darkText,
+      ),
+      bodyLarge: GoogleFonts.plusJakartaSans(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.darkText,
       ),
-      titleSmall: GoogleFonts.poppins(
+      bodyMedium: GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: AppColors.darkText,
-      ),
-      bodyLarge: GoogleFonts.poppins(
-        fontSize: 16,
-        fontWeight: FontWeight.normal,
-        color: AppColors.darkText,
-      ),
-      bodyMedium: GoogleFonts.poppins(
-        fontSize: 14,
-        fontWeight: FontWeight.normal,
         color: AppColors.darkTextSecondary,
       ),
-      bodySmall: GoogleFonts.poppins(
+      bodySmall: GoogleFonts.plusJakartaSans(
         fontSize: 12,
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
         color: AppColors.darkTextTertiary,
       ),
     );
@@ -278,7 +286,7 @@ class AppTheme {
       elevation: 1,
       shadowColor: AppColors.lightShadow,
       centerTitle: true,
-      titleTextStyle: GoogleFonts.poppins(
+      titleTextStyle: GoogleFonts.sora(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: AppColors.lightText,
@@ -293,7 +301,7 @@ class AppTheme {
       elevation: 1,
       shadowColor: AppColors.darkShadow,
       centerTitle: true,
-      titleTextStyle: GoogleFonts.poppins(
+      titleTextStyle: GoogleFonts.sora(
         fontSize: 20,
         fontWeight: FontWeight.w700,
         color: AppColors.darkText,
