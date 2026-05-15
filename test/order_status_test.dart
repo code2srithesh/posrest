@@ -1,14 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:posrest/features/kitchen/controllers/kitchen_controller.dart';
-import 'package:posrest/features/orders/controllers/order_controller.dart';
 import 'package:posrest/data/models/order_model.dart';
 
 void main() {
   group('Order Status Tracking Tests', () {
     late KitchenController kitchenController;
-    late OrderController orderController;
 
     setUp(() {
       // Properly initialize GetX with test bindings
@@ -16,7 +13,6 @@ void main() {
 
       // Create controllers without registering in GetX
       kitchenController = KitchenController();
-      orderController = OrderController();
     });
 
     tearDown(() {
@@ -68,7 +64,7 @@ void main() {
       // Note: loadKitchenOrders requires proper context for snackbar display
       // In a test environment with no overlay, we just verify the observable exists
       expect(kitchenController.allOrders, isNotNull);
-      expect(kitchenController.allOrders.value, isA<List<OrderModel>>());
+      expect(kitchenController.allOrders, isA<RxList<OrderModel>>());
 
       print('✅ Kitchen display initialized');
     });

@@ -53,7 +53,9 @@ class RegisterController extends GetxController {
         );
       }
     } catch (e) {
-      errorMessage.value = 'Error: $e';
+      if (!isClosed) {
+        errorMessage.value = 'Error: $e';
+      }
       Get.snackbar(
         'Error',
         'Registration error: $e',
@@ -61,7 +63,9 @@ class RegisterController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
-      isLoading.value = false;
+      if (!isClosed) {
+        isLoading.value = false;
+      }
     }
   }
 

@@ -26,7 +26,7 @@ class AuthService {
       _prefs = await SharedPreferences.getInstance();
       _db = DatabaseHelper();
       _initialized = true;
-      _createDefaultUsers();
+      await _createDefaultUsers();
     }
   }
 
@@ -40,72 +40,87 @@ class AuthService {
   Future<void> _createDefaultUsers() async {
     try {
       final existingUsers = await _db.getAllUsers();
-      if (existingUsers.isEmpty) {
-        // Create demo users with different roles
-        final demoUsers = [
-          UserModel(
-            id: const Uuid().v4(),
-            name: 'Admin User',
-            email: 'admin@posrest.com',
-            password: 'admin123', // In production, these would be hashed
-            role: 'admin',
-            isActive: true,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            syncStatus: 'synced',
-          ),
-          UserModel(
-            id: const Uuid().v4(),
-            name: 'Manager',
-            email: 'manager@posrest.com',
-            password: 'manager123',
-            role: 'manager',
-            isActive: true,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            syncStatus: 'synced',
-          ),
-          UserModel(
-            id: const Uuid().v4(),
-            name: 'Cashier',
-            email: 'cashier@posrest.com',
-            password: 'cashier123',
-            role: 'cashier',
-            isActive: true,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            syncStatus: 'synced',
-          ),
-          UserModel(
-            id: const Uuid().v4(),
-            name: 'Waiter',
-            email: 'waiter@posrest.com',
-            password: 'waiter123',
-            role: 'waiter',
-            isActive: true,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            syncStatus: 'synced',
-          ),
-          UserModel(
-            id: const Uuid().v4(),
-            name: 'Chef',
-            email: 'chef@posrest.com',
-            password: 'chef123',
-            role: 'chef',
-            isActive: true,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            syncStatus: 'synced',
-          ),
-        ];
+      // Ensure canonical demo accounts exist even on older databases.
+      final demoUsers = [
+        UserModel(
+          id: const Uuid().v4(),
+          name: 'Admin User',
+          email: 'admin@posrest.com',
+          password: 'admin123', // In production, these would be hashed
+          role: 'admin',
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: 'synced',
+        ),
+        UserModel(
+          id: const Uuid().v4(),
+          name: 'Manager',
+          email: 'manager@posrest.com',
+          password: 'manager123',
+          role: 'manager',
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: 'synced',
+        ),
+        UserModel(
+          id: const Uuid().v4(),
+          name: 'Cashier',
+          email: 'cashier@posrest.com',
+          password: 'cashier123',
+          role: 'cashier',
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: 'synced',
+        ),
+        UserModel(
+          id: const Uuid().v4(),
+          name: 'Waiter',
+          email: 'waiter@posrest.com',
+          password: 'waiter123',
+          role: 'waiter',
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: 'synced',
+        ),
+        UserModel(
+          id: const Uuid().v4(),
+          name: 'Chef',
+          email: 'chef@posrest.com',
+          password: 'chef123',
+          role: 'chef',
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: 'synced',
+        ),
+      ];
 
-        for (final user in demoUsers) {
+      for (final user in demoUsers) {
+        final existing = existingUsers.where(
+          (stored) => stored.email.toLowerCase() == user.email.toLowerCase(),
+        );
+
+        if (existing.isEmpty) {
           await _db.insertUser(user);
+        } else {
+          final stored = existing.first;
+          final normalized = stored.copyWith(
+            name: user.name,
+            password: user.password,
+            role: user.role,
+            isActive: user.isActive,
+            syncStatus: user.syncStatus,
+            updatedAt: DateTime.now(),
+          );
+          await _db.updateUser(normalized);
         }
       }
     } catch (e) {
-      print('Error creating default users: $e');
+      // Ignore seed errors here and let login surface a usable message.
     }
   }
 
@@ -296,12 +311,13 @@ class AuthService {
   }) async {
     try {
       await _ensureInitialized();
+      final normalizedEmail = email.trim().toLowerCase();
 
       if (name.trim().isEmpty) {
         return {'success': false, 'message': 'Name is required', 'user': null};
       }
 
-      if (!PasswordService.isValidEmail(email)) {
+      if (!PasswordService.isValidEmail(normalizedEmail)) {
         return {
           'success': false,
           'message': 'Invalid email format',
@@ -327,7 +343,7 @@ class AuthService {
 
       final users = await _db.getAllUsers();
       final existing = users.where(
-        (user) => user.email.toLowerCase() == email.trim().toLowerCase(),
+        (user) => user.email.toLowerCase() == normalizedEmail,
       );
       if (existing.isNotEmpty) {
         return {
@@ -340,7 +356,7 @@ class AuthService {
       final user = UserModel(
         id: const Uuid().v4(),
         name: name.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password: password,
         role: role,
         isActive: false,
@@ -356,6 +372,15 @@ class AuthService {
         'user': user,
       };
     } catch (e) {
+      final message = e.toString().toLowerCase();
+      if (message.contains('unique') && message.contains('users.email')) {
+        return {
+          'success': false,
+          'message': 'An account with this email already exists',
+          'user': null,
+        };
+      }
+
       return {
         'success': false,
         'message': 'Registration error: $e',
@@ -372,6 +397,8 @@ class AuthService {
     bool isActive = true,
   }) async {
     try {
+      await _ensureInitialized();
+
       final result = await registerUser(
         name: name,
         email: email,
@@ -381,6 +408,14 @@ class AuthService {
 
       if (result['success'] != true) {
         return result;
+      }
+
+      if (result['user'] is! UserModel) {
+        return {
+          'success': false,
+          'message': 'Unable to create user. Please try again.',
+          'user': null,
+        };
       }
 
       final user = (result['user'] as UserModel).copyWith(
@@ -398,6 +433,15 @@ class AuthService {
         'user': user,
       };
     } catch (e) {
+      final message = e.toString().toLowerCase();
+      if (message.contains('unique') && message.contains('users.email')) {
+        return {
+          'success': false,
+          'message': 'An account with this email already exists',
+          'user': null,
+        };
+      }
+
       return {
         'success': false,
         'message': 'Create user error: $e',

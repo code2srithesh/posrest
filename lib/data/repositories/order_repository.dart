@@ -56,7 +56,9 @@ class OrderRepository {
     }
   }
 
-  Future<List<OrderModel>> _hydrateOrdersWithItems(List<OrderModel> orders) async {
+  Future<List<OrderModel>> _hydrateOrdersWithItems(
+    List<OrderModel> orders,
+  ) async {
     final hydrated = <OrderModel>[];
     for (final order in orders) {
       final items = await _dbHelper.getOrderItems(order.id);

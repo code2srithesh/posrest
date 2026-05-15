@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../features/settings/controllers/theme_controller.dart';
-import '../themes/app_colors.dart';
 
 /// Reusable theme toggle button widget
 class ThemeToggleButton extends StatelessWidget {

@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../themes/app_colors.dart';
 import '../themes/app_animations.dart';
 
 /// Premium glassmorphic container with blur and animations

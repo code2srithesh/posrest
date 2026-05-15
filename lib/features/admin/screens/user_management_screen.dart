@@ -53,61 +53,65 @@ class UserManagementScreen extends StatelessWidget {
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        child: Obx(
-          () => SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 1150;
-                final cardWidth = isWide
-                    ? (constraints.maxWidth - 60) / 2
-                    : constraints.maxWidth;
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 1150;
+              final cardWidth = isWide
+                  ? (constraints.maxWidth - 60) / 2
+                  : constraints.maxWidth;
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Wrap(
-                    spacing: 20,
-                    runSpacing: 20,
-                    children: [
-                      SizedBox(
-                        width: cardWidth,
-                        child: _sectionCard(
-                          title: 'Create User',
-                          child: Column(
-                            children: [
-                              _field(
-                                controller.nameController,
-                                'Name',
-                                Icons.person,
-                              ),
-                              const SizedBox(height: 12),
-                              _field(
-                                controller.emailController,
-                                'Email',
-                                Icons.email_outlined,
-                              ),
-                              const SizedBox(height: 12),
-                              _field(
-                                controller.passwordController,
-                                'Password',
-                                Icons.lock_outline,
-                                obscureText: true,
-                              ),
-                              const SizedBox(height: 16),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: controller.assignableRoles.map((role) {
-                                  return ChoiceChip(
-                                    label: Text(AuthService().getRoleLabel(role)),
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Wrap(
+                  spacing: 20,
+                  runSpacing: 20,
+                  children: [
+                    SizedBox(
+                      width: cardWidth,
+                      child: _sectionCard(
+                        title: 'Create User',
+                        child: Column(
+                          children: [
+                            _field(
+                              controller.nameController,
+                              'Name',
+                              Icons.person,
+                            ),
+                            const SizedBox(height: 12),
+                            _field(
+                              controller.emailController,
+                              'Email',
+                              Icons.email_outlined,
+                            ),
+                            const SizedBox(height: 12),
+                            _field(
+                              controller.passwordController,
+                              'Password',
+                              Icons.lock_outline,
+                              obscureText: true,
+                            ),
+                            const SizedBox(height: 16),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: controller.assignableRoles.map((role) {
+                                return Obx(
+                                  () => ChoiceChip(
+                                    label: Text(
+                                      AuthService().getRoleLabel(role),
+                                    ),
                                     selected:
                                         controller.selectedRole.value == role,
                                     onSelected: (_) =>
                                         controller.selectedRole.value = role,
-                                  );
-                                }).toList(),
-                              ),
-                              const SizedBox(height: 16),
-                              SwitchListTile(
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 16),
+                            Obx(
+                              () => SwitchListTile(
                                 value: controller.isApproved.value,
                                 onChanged: (value) =>
                                     controller.isApproved.value = value,
@@ -121,8 +125,10 @@ class UserManagementScreen extends StatelessWidget {
                                 ),
                                 activeColor: AppColors.accentTeal,
                               ),
-                              const SizedBox(height: 8),
-                              SizedBox(
+                            ),
+                            const SizedBox(height: 8),
+                            Obx(
+                              () => SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: controller.isLoading.value
@@ -139,15 +145,17 @@ class UserManagementScreen extends StatelessWidget {
                                       : const Text('Create User'),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(
-                        width: cardWidth,
-                        child: _sectionCard(
-                          title: 'Pending Approval',
-                          child: controller.pendingUsers.isEmpty
+                    ),
+                    SizedBox(
+                      width: cardWidth,
+                      child: _sectionCard(
+                        title: 'Pending Approval',
+                        child: Obx(
+                          () => controller.pendingUsers.isEmpty
                               ? const Text(
                                   'No pending users',
                                   style: TextStyle(color: Colors.white70),
@@ -178,11 +186,13 @@ class UserManagementScreen extends StatelessWidget {
                                 ),
                         ),
                       ),
-                      SizedBox(
-                        width: constraints.maxWidth,
-                        child: _sectionCard(
-                          title: 'Active Users',
-                          child: controller.approvedUsers.isEmpty
+                    ),
+                    SizedBox(
+                      width: constraints.maxWidth,
+                      child: _sectionCard(
+                        title: 'Active Users',
+                        child: Obx(
+                          () => controller.approvedUsers.isEmpty
                               ? const Text(
                                   'No active users',
                                   style: TextStyle(color: Colors.white70),
@@ -205,11 +215,11 @@ class UserManagementScreen extends StatelessWidget {
                                 ),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),

@@ -163,348 +163,363 @@ class OrderScreen extends StatelessWidget {
                     return Flex(
                       direction: isCompact ? Axis.vertical : Axis.horizontal,
                       children: [
-                    // Menu Section (Left)
-                    Expanded(
-                      flex: isCompact ? 3 : 3,
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 66,
-                            child: ScrollConfiguration(
-                              behavior: const MaterialScrollBehavior().copyWith(
-                                overscroll: false,
-                              ),
-                              child: Scrollbar(
-                                thumbVisibility: true,
-                                child: ListView.builder(
-                                  physics: const BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  itemCount: menuController.categories.length,
-                                  itemBuilder: (context, index) {
-                                    final category =
-                                        menuController.categories[index];
-                                    final isSelected =
-                                        menuController
-                                            .selectedCategoryId
-                                            .value ==
-                                        category.id;
-
-                                    return SlideInWidget(
-                                      begin: Offset((index - 0.5) * 0.2, 0),
-                                      duration: Duration(
-                                        milliseconds: 300 + (index * 50),
+                        // Menu Section (Left)
+                        Expanded(
+                          flex: isCompact ? 3 : 3,
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 66,
+                                child: ScrollConfiguration(
+                                  behavior: const MaterialScrollBehavior()
+                                      .copyWith(overscroll: false),
+                                  child: Scrollbar(
+                                    thumbVisibility: true,
+                                    child: ListView.builder(
+                                      physics: const BouncingScrollPhysics(),
+                                      scrollDirection: Axis.horizontal,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                        ),
-                                        child: GlassContainer(
-                                          backdropColor: isSelected
-                                              ? AppColors.glassOverlayTealMed
-                                              : AppColors.glassOverlayPurple,
-                                          shadows: isSelected
-                                              ? AppAnimations.shadowGlowTeal
-                                              : AppAnimations.shadowSmall,
-                                          interactive: true,
-                                          child: Material(
-                                            color: Colors.transparent,
-                                            child: InkWell(
-                                              onTap: () {
-                                                menuController
-                                                    .loadItemsByCategory(
-                                                      category.id,
-                                                    );
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 12,
+                                      itemCount:
+                                          menuController.categories.length,
+                                      itemBuilder: (context, index) {
+                                        final category =
+                                            menuController.categories[index];
+                                        final isSelected =
+                                            menuController
+                                                .selectedCategoryId
+                                                .value ==
+                                            category.id;
+
+                                        return SlideInWidget(
+                                          begin: Offset((index - 0.5) * 0.2, 0),
+                                          duration: Duration(
+                                            milliseconds: 300 + (index * 50),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                            ),
+                                            child: GlassContainer(
+                                              backdropColor: isSelected
+                                                  ? AppColors
+                                                        .glassOverlayTealMed
+                                                  : AppColors
+                                                        .glassOverlayPurple,
+                                              shadows: isSelected
+                                                  ? AppAnimations.shadowGlowTeal
+                                                  : AppAnimations.shadowSmall,
+                                              interactive: true,
+                                              child: Material(
+                                                color: Colors.transparent,
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    menuController
+                                                        .loadItemsByCategory(
+                                                          category.id,
+                                                        );
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 12,
+                                                        ),
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          _getCategoryIcon(
+                                                            category.name,
+                                                          ),
+                                                          size: 18,
+                                                          color: isSelected
+                                                              ? AppColors
+                                                                    .accentTeal
+                                                              : AppColors
+                                                                    .lightTextTertiary,
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
+                                                        Text(
+                                                          category.name,
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                isSelected
+                                                                ? FontWeight
+                                                                      .w700
+                                                                : FontWeight
+                                                                      .w600,
+                                                            color: isSelected
+                                                                ? AppColors
+                                                                      .accentTeal
+                                                                : AppColors
+                                                                      .lightTextSecondary,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      _getCategoryIcon(
-                                                        category.name,
-                                                      ),
-                                                      size: 18,
-                                                      color: isSelected
-                                                          ? AppColors.accentTeal
-                                                          : AppColors
-                                                                .lightTextTertiary,
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      category.name,
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight: isSelected
-                                                            ? FontWeight.w700
-                                                            : FontWeight.w600,
-                                                        color: isSelected
-                                                            ? AppColors
-                                                                  .accentTeal
-                                                            : AppColors
-                                                                  .lightTextSecondary,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: ScrollConfiguration(
-                              behavior: const MaterialScrollBehavior().copyWith(
-                                overscroll: false,
-                              ),
-                              child: Scrollbar(
-                                thumbVisibility: true,
-                                child: GridView.builder(
-                                  physics: const BouncingScrollPhysics(),
-                                  padding: const EdgeInsets.all(12),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: menuGridCount,
-                                        mainAxisSpacing: 12,
-                                        crossAxisSpacing: 12,
-                                        childAspectRatio: 0.77,
-                                      ),
-                                  itemCount: menuController.menuItems.length,
-                                  itemBuilder: (context, index) {
-                                    final item =
-                                        menuController.menuItems[index];
-                                    return SlideInWidget(
-                                      begin: Offset(
-                                        index.isEven ? -0.2 : 0.2,
-                                        (index ~/ 2) * 0.1,
-                                      ),
-                                      duration: Duration(
-                                        milliseconds: 350 + (index * 50),
-                                      ),
-                                      child: _buildMenuItemCard(
-                                        item,
-                                        orderController,
-                                        context,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      flex: isCompact ? 2 : 2,
-                      child: Container(
-                        margin: isCompact
-                            ? const EdgeInsets.fromLTRB(10, 0, 10, 10)
-                            : const EdgeInsets.fromLTRB(0, 10, 10, 10),
-                        decoration: BoxDecoration(
-                          color: AppColors.darkCard.withOpacity(0.7),
-                          borderRadius: AppAnimations.radiusXL,
-                          border: Border.all(color: AppColors.darkBorder),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: AppAnimations.radiusXL,
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      AppColors.primary,
-                                      AppColors.accentGradient2,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
+                                        );
+                                      },
+                                    ),
                                   ),
-                                  boxShadow: AppAnimations.shadowGlow,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      'Current Order',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Obx(
-                                      () => Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
-                                          borderRadius:
-                                              AppAnimations.radiusSmall,
-                                        ),
-                                        child: Text(
-                                          '${orderController.currentOrderItems.length} items',
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ),
                               Expanded(
-                                child: Obx(() {
-                                  if (orderController
-                                      .currentOrderItems
-                                      .isEmpty) {
-                                    return const Center(
-                                      child: Text(
-                                        'No items added yet',
-                                        style: TextStyle(
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                      ),
-                                    );
-                                  }
-
-                                  return ScrollConfiguration(
-                                    behavior: const MaterialScrollBehavior()
-                                        .copyWith(overscroll: false),
-                                    child: Scrollbar(
-                                      thumbVisibility: true,
-                                      child: ListView.builder(
-                                        physics: const BouncingScrollPhysics(),
-                                        padding: const EdgeInsets.all(8),
-                                        itemCount: orderController
-                                            .currentOrderItems
-                                            .length,
-                                        itemBuilder: (context, index) {
-                                          final item = orderController
-                                              .currentOrderItems[index];
-                                          return _buildOrderItemTile(
+                                child: ScrollConfiguration(
+                                  behavior: const MaterialScrollBehavior()
+                                      .copyWith(overscroll: false),
+                                  child: Scrollbar(
+                                    thumbVisibility: true,
+                                    child: GridView.builder(
+                                      physics: const BouncingScrollPhysics(),
+                                      padding: const EdgeInsets.all(12),
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: menuGridCount,
+                                            mainAxisSpacing: 12,
+                                            crossAxisSpacing: 12,
+                                            childAspectRatio: 0.77,
+                                          ),
+                                      itemCount:
+                                          menuController.menuItems.length,
+                                      itemBuilder: (context, index) {
+                                        final item =
+                                            menuController.menuItems[index];
+                                        return SlideInWidget(
+                                          begin: Offset(
+                                            index.isEven ? -0.2 : 0.2,
+                                            (index ~/ 2) * 0.1,
+                                          ),
+                                          duration: Duration(
+                                            milliseconds: 350 + (index * 50),
+                                          ),
+                                          child: _buildMenuItemCard(
                                             item,
-                                            index,
                                             orderController,
-                                          );
-                                        },
-                                      ),
+                                            context,
+                                          ),
+                                        );
+                                      },
                                     ),
-                                  );
-                                }),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.12),
-                                  border: Border(
-                                    top: BorderSide(
-                                      color: AppTheme.borderColor,
-                                    ),
-                                  ),
-                                ),
-                                child: Obx(
-                                  () => Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Subtotal:',
-                                            style: TextStyle(fontSize: 14),
-                                          ),
-                                          CurrencyDisplay(
-                                            amount: orderController.subtotal,
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Tax (${AppConstants.currencySymbol}):',
-                                            style: TextStyle(fontSize: 14),
-                                          ),
-                                          CurrencyDisplay(
-                                            amount: orderController.taxAmount,
-                                          ),
-                                        ],
-                                      ),
-                                      const Divider(height: 16),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Total:',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          CurrencyDisplay(
-                                            amount: orderController.totalAmount,
-                                            textStyle: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppTheme.primaryColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      // Action Buttons
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: SecondaryButton(
-                                              label: 'Cancel',
-                                              onPressed: () => Get.back(),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: PrimaryButton(
-                                              label: 'Send to Kitchen',
-                                              onPressed: () => orderController
-                                                  .completeOrder(),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ),
+                        Expanded(
+                          flex: isCompact ? 2 : 2,
+                          child: Container(
+                            margin: isCompact
+                                ? const EdgeInsets.fromLTRB(10, 0, 10, 10)
+                                : const EdgeInsets.fromLTRB(0, 10, 10, 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.darkCard.withOpacity(0.7),
+                              borderRadius: AppAnimations.radiusXL,
+                              border: Border.all(color: AppColors.darkBorder),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: AppAnimations.radiusXL,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppColors.primary,
+                                          AppColors.accentGradient2,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      boxShadow: AppAnimations.shadowGlow,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text(
+                                          'Current Order',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        Obx(
+                                          () => Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(
+                                                0.2,
+                                              ),
+                                              borderRadius:
+                                                  AppAnimations.radiusSmall,
+                                            ),
+                                            child: Text(
+                                              '${orderController.currentOrderItems.length} items',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Obx(() {
+                                      if (orderController
+                                          .currentOrderItems
+                                          .isEmpty) {
+                                        return const Center(
+                                          child: Text(
+                                            'No items added yet',
+                                            style: TextStyle(
+                                              color: AppTheme.textSecondary,
+                                            ),
+                                          ),
+                                        );
+                                      }
+
+                                      return ScrollConfiguration(
+                                        behavior: const MaterialScrollBehavior()
+                                            .copyWith(overscroll: false),
+                                        child: Scrollbar(
+                                          thumbVisibility: true,
+                                          child: ListView.builder(
+                                            physics:
+                                                const BouncingScrollPhysics(),
+                                            padding: const EdgeInsets.all(8),
+                                            itemCount: orderController
+                                                .currentOrderItems
+                                                .length,
+                                            itemBuilder: (context, index) {
+                                              final item = orderController
+                                                  .currentOrderItems[index];
+                                              return _buildOrderItemTile(
+                                                item,
+                                                index,
+                                                orderController,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.12),
+                                      border: Border(
+                                        top: BorderSide(
+                                          color: AppTheme.borderColor,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Obx(
+                                      () => Column(
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text(
+                                                'Subtotal:',
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                              CurrencyDisplay(
+                                                amount:
+                                                    orderController.subtotal,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text(
+                                                'Tax (${AppConstants.currencySymbol}):',
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                              CurrencyDisplay(
+                                                amount:
+                                                    orderController.taxAmount,
+                                              ),
+                                            ],
+                                          ),
+                                          const Divider(height: 16),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text(
+                                                'Total:',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              CurrencyDisplay(
+                                                amount:
+                                                    orderController.totalAmount,
+                                                textStyle: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppTheme.primaryColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          // Action Buttons
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: SecondaryButton(
+                                                  label: 'Cancel',
+                                                  onPressed: () => Get.back(),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: PrimaryButton(
+                                                  label: 'Send to Kitchen',
+                                                  onPressed: () =>
+                                                      orderController
+                                                          .completeOrder(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     );
                   },

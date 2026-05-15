@@ -28,16 +28,25 @@ class AuthController extends GetxController {
       return;
     }
 
+    if (isClosed) {
+      return;
+    }
+
     isLoading.value = true;
     errorMessage.value = '';
     try {
-      // Call the new login method
+      await AuthService.instance.initialize();
+
       final result = await AuthService.instance.login(
         emailController.text.trim(),
         passwordController.text,
       );
 
       if (result['success']) {
+        if (isClosed) {
+          return;
+        }
+
         final user = result['user'];
         final targetRoute = AuthService.instance.getLandingRouteForRole(
           user?.role ?? 'waiter',
@@ -52,6 +61,10 @@ class AuthController extends GetxController {
         );
         Get.offAllNamed(targetRoute);
       } else {
+        if (isClosed) {
+          return;
+        }
+
         errorMessage.value = result['message'] ?? 'Login failed';
         Get.snackbar(
           'Login Failed',
@@ -61,7 +74,9 @@ class AuthController extends GetxController {
         );
       }
     } catch (e) {
-      errorMessage.value = 'Error: $e';
+      if (!isClosed) {
+        errorMessage.value = 'Error: $e';
+      }
       Get.snackbar(
         'Error',
         'Login error: $e',
@@ -69,7 +84,9 @@ class AuthController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
-      isLoading.value = false;
+      if (!isClosed) {
+        isLoading.value = false;
+      }
     }
   }
 

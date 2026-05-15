@@ -10,16 +10,18 @@ class UserManagementController extends GetxController {
   final passwordController = TextEditingController();
 
   final users = <UserModel>[].obs;
+  final pendingUsers = <UserModel>[].obs;
+  final approvedUsers = <UserModel>[].obs;
   final selectedRole = AppConstants.roleWaiter.obs;
   final isApproved = true.obs;
   final isLoading = false.obs;
 
   List<String> get assignableRoles => AuthService.instance.getAssignableRoles();
 
-  List<UserModel> get pendingUsers =>
-      users.where((user) => !user.isActive).toList();
-  List<UserModel> get approvedUsers =>
-      users.where((user) => user.isActive).toList();
+  void _updateUserLists(List<UserModel> allUsers) {
+    pendingUsers.assignAll(allUsers.where((user) => !user.isActive).toList());
+    approvedUsers.assignAll(allUsers.where((user) => user.isActive).toList());
+  }
 
   @override
   void onInit() {
@@ -28,8 +30,21 @@ class UserManagementController extends GetxController {
   }
 
   Future<void> loadUsers() async {
-    final loaded = await AuthService.instance.getAllUsers();
-    users.assignAll(loaded);
+    try {
+      final loaded = await AuthService.instance.getAllUsers();
+      if (isClosed) {
+        return;
+      }
+      // Defer state update to avoid conflicts with ongoing builds
+      Future.microtask(() {
+        if (!isClosed) {
+          users.assignAll(loaded);
+          _updateUserLists(loaded);
+        }
+      });
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load users: $e');
+    }
   }
 
   Future<void> createUser() async {
@@ -60,8 +75,12 @@ class UserManagementController extends GetxController {
       } else {
         Get.snackbar('Error', result['message'] ?? 'Failed to create user');
       }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to create user: $e');
     } finally {
-      isLoading.value = false;
+      if (!isClosed) {
+        isLoading.value = false;
+      }
     }
   }
 

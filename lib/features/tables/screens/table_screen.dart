@@ -334,7 +334,8 @@ class TableScreen extends StatelessWidget {
                                 ),
                             itemCount: controller.getFilteredTables().length,
                             itemBuilder: (context, index) {
-                              final table = controller.getFilteredTables()[index];
+                              final table = controller
+                                  .getFilteredTables()[index];
                               return SlideInWidget(
                                 begin: const Offset(0, 0.12),
                                 duration: Duration(
