@@ -16,12 +16,13 @@ class UserManagementScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('User Management'),
+        title: const Text('User Management', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           tooltip: 'Back',
           onPressed: () {
             if (Navigator.of(context).canPop()) {
@@ -35,24 +36,17 @@ class UserManagementScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: controller.loadUsers,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white),
           ),
           IconButton(
             tooltip: 'Logout',
             onPressed: () =>
                 AuthService().logout().then((_) => Get.offAllNamed('/login')),
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
           ),
         ],
       ),
-      body: AnimatedGradientBG(
-        colors: const [
-          AppColors.gradientStart,
-          AppColors.primaryDark,
-          AppColors.gradientEnd,
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+      body: FluidVideoBackground(
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {

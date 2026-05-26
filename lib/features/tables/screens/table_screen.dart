@@ -14,25 +14,30 @@ class TableScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final role = AuthService.instance.getUserRole();
+    if (role == AppConstants.roleCashier) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed('/cashier');
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    } else if (role == AppConstants.roleChef) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed('/kitchen');
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    }
+
     final controller = Get.put(TableController());
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Tables'),
+        title: const Text('Tables', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: AppColors.gradientDarkOLED,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           tooltip: 'Back',
           onPressed: () {
             if (Navigator.of(context).canPop()) {
@@ -78,19 +83,12 @@ class TableScreen extends StatelessWidget {
                 Get.offAllNamed('/login');
               });
             },
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
           ),
           const SizedBox(width: 6),
         ],
       ),
-      body: AnimatedGradientBG(
-        colors: const [
-          AppColors.gradientStart,
-          AppColors.primaryDark,
-          AppColors.gradientEnd,
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+      body: FluidVideoBackground(
         child: Stack(
           children: [
             Positioned(

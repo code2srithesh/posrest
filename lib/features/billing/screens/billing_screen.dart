@@ -6,6 +6,7 @@ import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../controllers/billing_controller.dart';
+import '../../../services/auth_service.dart';
 
 class BillingScreen extends StatelessWidget {
   final String orderId;
@@ -15,6 +16,7 @@ class BillingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final billingController = Get.put(BillingController());
+    final scrollController = ScrollController();
 
     // Load order on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -59,7 +61,12 @@ class BillingScreen extends StatelessWidget {
               return;
             }
 
-            Get.offAllNamed('/tables');
+            final role = AuthService.instance.getUserRole();
+            if (role == 'cashier') {
+              Get.offAllNamed('/cashier');
+            } else {
+              Get.offAllNamed('/tables');
+            }
           },
         ),
         actions: [const ThemeToggleButton(compact: true)],
@@ -129,8 +136,10 @@ class BillingScreen extends StatelessWidget {
                   overscroll: false,
                 ),
                 child: Scrollbar(
+                  controller: scrollController,
                   thumbVisibility: true,
                   child: SingleChildScrollView(
+                    controller: scrollController,
                     physics: const BouncingScrollPhysics(),
                     child: SafeArea(
                       child: Padding(
@@ -793,8 +802,12 @@ class BillingScreen extends StatelessWidget {
     final result = await controller.processPayment(amount);
     if (result) {
       Future.delayed(const Duration(milliseconds: 500), () {
-        Get.back();
-        Get.back();
+        final role = AuthService.instance.getUserRole();
+        if (role == 'cashier') {
+          Get.offAllNamed('/cashier');
+        } else {
+          Get.offAllNamed('/tables');
+        }
       });
     }
   }

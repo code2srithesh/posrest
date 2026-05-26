@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/order_model.dart';
@@ -6,6 +7,17 @@ import '../../../data/repositories/order_repository.dart';
 import '../../../data/repositories/payment_repository.dart';
 
 class BillingController extends GetxController {
+  void _showSnackbar(String title, String message, {bool isError = false}) {
+    if (Get.testMode) return;
+    try {
+      Get.snackbar(
+        title,
+        message,
+        backgroundColor: isError ? Colors.red : Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (_) {}
+  }
   final orderRepository = OrderRepository();
   final paymentRepository = PaymentRepository();
 
@@ -72,12 +84,18 @@ class BillingController extends GetxController {
     try {
       isLoading.value = true;
       final order = await orderRepository.getOrderById(orderId);
+
+      if (order == null) {
+        _showSnackbar('Error', 'Order not found', isError: true);
+        return;
+      }
+
       currentOrder.value = order;
       paidAmount.value = 0;
       discountPercent.value = 0;
       serviceChargePercent.value = 0;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load order: $e');
+      _showSnackbar('Error', 'Failed to load order: $e', isError: true);
     } finally {
       isLoading.value = false;
     }
@@ -117,14 +135,15 @@ class BillingController extends GetxController {
   Future<bool> processPayment(double paidAmountValue) async {
     try {
       if (currentOrder.value == null) {
-        Get.snackbar('Error', 'No order found');
+        _showSnackbar('Error', 'No order found', isError: true);
         return false;
       }
 
       if (paidAmountValue < totalAmount) {
-        Get.snackbar(
+        _showSnackbar(
           'Error',
           'Insufficient payment. Need ₹${totalAmount.toStringAsFixed(2)}',
+          isError: true,
         );
         return false;
       }
@@ -154,10 +173,10 @@ class BillingController extends GetxController {
       await orderRepository.updateOrder(updatedOrder);
       currentOrder.value = updatedOrder;
 
-      Get.snackbar('Success', 'Payment processed successfully');
+      _showSnackbar('Success', 'Payment processed successfully');
       return true;
     } catch (e) {
-      Get.snackbar('Error', 'Payment failed: $e');
+      _showSnackbar('Error', 'Payment failed: $e', isError: true);
       return false;
     } finally {
       isLoading.value = false;
@@ -168,9 +187,9 @@ class BillingController extends GetxController {
   Future<void> printReceipt() async {
     try {
       if (currentOrder.value == null) return;
-      Get.snackbar('Info', 'Print functionality coming in Phase 3');
+      _showSnackbar('Info', 'Print functionality coming in Phase 3');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to print receipt: $e');
+      _showSnackbar('Error', 'Failed to print receipt: $e', isError: true);
     }
   }
 

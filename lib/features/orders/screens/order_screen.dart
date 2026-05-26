@@ -9,14 +9,30 @@ import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../features/menu/controllers/menu_controller.dart' as menu_ctrl;
 import '../controllers/order_controller.dart';
+import '../../../services/auth_service.dart';
 
 class OrderScreen extends StatelessWidget {
   const OrderScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final role = AuthService.instance.getUserRole();
+    if (role == AppConstants.roleCashier) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed('/cashier');
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    } else if (role == AppConstants.roleChef) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed('/kitchen');
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    }
+
     final menuController = Get.put(menu_ctrl.MenuController());
     final orderController = Get.put(OrderController());
+    final menuScrollController = ScrollController();
+    final orderScrollController = ScrollController();
 
     // Get arguments from navigation
     final arguments = Get.arguments ?? {};
@@ -68,7 +84,14 @@ class OrderScreen extends StatelessWidget {
               return;
             }
 
-            Get.offAllNamed('/tables');
+            final role = AuthService.instance.getUserRole();
+            if (role == AppConstants.roleCashier) {
+              Get.offAllNamed('/cashier');
+            } else if (role == AppConstants.roleChef) {
+              Get.offAllNamed('/kitchen');
+            } else {
+              Get.offAllNamed('/tables');
+            }
           },
         ),
         actions: [
@@ -174,7 +197,7 @@ class OrderScreen extends StatelessWidget {
                                   behavior: const MaterialScrollBehavior()
                                       .copyWith(overscroll: false),
                                   child: Scrollbar(
-                                    thumbVisibility: true,
+                                    thumbVisibility: false,
                                     child: ListView.builder(
                                       physics: const BouncingScrollPhysics(),
                                       scrollDirection: Axis.horizontal,
@@ -280,8 +303,10 @@ class OrderScreen extends StatelessWidget {
                                   behavior: const MaterialScrollBehavior()
                                       .copyWith(overscroll: false),
                                   child: Scrollbar(
+                                    controller: menuScrollController,
                                     thumbVisibility: true,
                                     child: GridView.builder(
+                                      controller: menuScrollController,
                                       physics: const BouncingScrollPhysics(),
                                       padding: const EdgeInsets.all(12),
                                       gridDelegate:
@@ -403,8 +428,10 @@ class OrderScreen extends StatelessWidget {
                                         behavior: const MaterialScrollBehavior()
                                             .copyWith(overscroll: false),
                                         child: Scrollbar(
+                                          controller: orderScrollController,
                                           thumbVisibility: true,
                                           child: ListView.builder(
+                                            controller: orderScrollController,
                                             physics:
                                                 const BouncingScrollPhysics(),
                                             padding: const EdgeInsets.all(8),
@@ -800,8 +827,10 @@ class OrderScreen extends StatelessWidget {
             borderRadius: AppAnimations.radiusLarge,
           ),
           backgroundColor: Colors.transparent,
-          child: SingleChildScrollView(
-            child: GlassContainer(
+          child: StatefulBuilder(
+            builder: (context, dialogSetState) {
+              return SingleChildScrollView(
+                child: GlassContainer(
               backdropColor: AppColors.glassOverlayPurpleMed,
               shadows: AppAnimations.shadowLarge,
               borderRadius: AppAnimations.radiusLarge,
@@ -969,29 +998,29 @@ class OrderScreen extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               _buildQuantityButton('-', () {
-                                if (quantity > 1) {
-                                  quantity--;
-                                }
+                                dialogSetState(() {
+                                  if (quantity > 1) {
+                                    quantity--;
+                                  }
+                                });
                               }),
                               Container(
                                 width: 50,
                                 height: 48,
                                 alignment: Alignment.center,
-                                child: StatefulBuilder(
-                                  builder: (context, setState) {
-                                    return Text(
-                                      quantity.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.accentTeal,
-                                      ),
-                                    );
-                                  },
+                                child: Text(
+                                  quantity.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.accentTeal,
+                                  ),
                                 ),
                               ),
                               _buildQuantityButton('+', () {
-                                quantity++;
+                                dialogSetState(() {
+                                  quantity++;
+                                });
                               }),
                             ],
                           ),
@@ -1098,10 +1127,12 @@ class OrderScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildQuantityButton(String label, VoidCallback onTap) {

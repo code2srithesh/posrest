@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/order_model.dart';
@@ -17,6 +18,18 @@ class OrderController extends GetxController {
   final currentOrder = Rxn<OrderModel>();
   final currentOrderItems = <OrderItemModel>[].obs;
   final isLoading = false.obs;
+
+  void _showSnackbar(String title, String message, {bool isError = false}) {
+    if (Get.testMode) return;
+    try {
+      Get.snackbar(
+        title,
+        message,
+        backgroundColor: isError ? Colors.red : Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (_) {}
+  }
 
   double get subtotal {
     double total = 0;
@@ -60,7 +73,7 @@ class OrderController extends GetxController {
       currentOrder.value = order;
       currentOrderItems.clear();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create order: $e');
+      _showSnackbar('Error', 'Failed to create order: $e', isError: true);
     } finally {
       isLoading.value = false;
     }
@@ -75,7 +88,7 @@ class OrderController extends GetxController {
         currentOrderItems.assignAll(order.items);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load order: $e');
+      _showSnackbar('Error', 'Failed to load order: $e', isError: true);
     } finally {
       isLoading.value = false;
     }
@@ -140,7 +153,7 @@ class OrderController extends GetxController {
 
       _updateOrderTotals();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add item: $e');
+      _showSnackbar('Error', 'Failed to add item: $e', isError: true);
     }
   }
 
@@ -196,15 +209,16 @@ class OrderController extends GetxController {
       );
       await orderRepository.updateOrder(orderWithItems);
       currentOrder.value = orderWithItems;
-      Get.snackbar('Success', 'Order saved successfully');
+      _showSnackbar('Success', 'Order saved successfully');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save order: $e');
+      _showSnackbar('Error', 'Failed to save order: $e', isError: true);
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> completeOrder() async {
+  // Send order to kitchen (Waiter action)
+  Future<void> sendToKitchen() async {
     try {
       if (currentOrder.value == null) return;
 
@@ -215,23 +229,77 @@ class OrderController extends GetxController {
         subtotal: subtotal,
         taxAmount: taxAmount,
         totalAmount: totalAmount,
-        status: AppConstants.orderStatusPreparing,
+        status: 'sent_to_kitchen', // Send to kitchen, not directly to preparing
+        updatedAt: DateTime.now(),
+      );
+
+      // Set the active observable state first so saveOrder() retains 'sent_to_kitchen'
+      currentOrder.value = updated;
+
+      await orderRepository.updateOrder(updated);
+      await saveOrder();
+      _showSnackbar('Success', 'Order sent to kitchen ✓');
+    } catch (e) {
+      _showSnackbar('Error', 'Failed to send to kitchen: $e', isError: true);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Mark order as served (Waiter action - customer received food)
+  Future<void> markAsServed() async {
+    try {
+      if (currentOrder.value == null) return;
+
+      isLoading.value = true;
+
+      final updated = currentOrder.value!.copyWith(
+        status: 'served',
         updatedAt: DateTime.now(),
       );
 
       await orderRepository.updateOrder(updated);
-      await saveOrder();
-      Get.snackbar('Success', 'Order sent to kitchen');
+      _showSnackbar('Success', 'Order marked as served');
+
+      currentOrder.value = updated;
+    } catch (e) {
+      _showSnackbar('Error', 'Failed to mark as served: $e', isError: true);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Send to payment (Waiter action - customer done eating, send to cashier)
+  Future<void> sendToPayment() async {
+    try {
+      if (currentOrder.value == null) return;
+
+      isLoading.value = true;
+
+      final updated = currentOrder.value!.copyWith(
+        status: 'payment_pending',
+        updatedAt: DateTime.now(),
+      );
+
+      await orderRepository.updateOrder(updated);
+      _showSnackbar('Success', 'Order sent to cashier for payment');
 
       // Navigate to billing screen
       Future.delayed(const Duration(milliseconds: 300), () {
         Get.toNamed('/billing/${updated.id}');
       });
+
+      currentOrder.value = updated;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to complete order: $e');
+      _showSnackbar('Error', 'Failed to send to payment: $e', isError: true);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Old method - kept for compatibility but redirects to sendToKitchen
+  Future<void> completeOrder() async {
+    await sendToKitchen();
   }
 
   void clearOrder() {

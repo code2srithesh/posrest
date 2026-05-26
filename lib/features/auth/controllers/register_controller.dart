@@ -8,13 +8,20 @@ class RegisterController extends GetxController {
   final passwordController = TextEditingController();
 
   final isLoading = false.obs;
-  final selectedRole = ''.obs;
+  final selectedRole = Rx<String?>(
+    null,
+  ); // Initialize as null, set with proper value
   final errorMessage = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
-    selectedRole.value = AuthService.instance.getAssignableRoles().first;
+    // Defer the initialization to avoid modifying observables during build
+    Future.microtask(() {
+      if (selectedRole.value == null || selectedRole.value!.isEmpty) {
+        selectedRole.value = AuthService.instance.getAssignableRoles().first;
+      }
+    });
   }
 
   Future<void> register() async {
@@ -25,6 +32,11 @@ class RegisterController extends GetxController {
       return;
     }
 
+    if (selectedRole.value == null || selectedRole.value!.isEmpty) {
+      errorMessage.value = 'Please select a role';
+      return;
+    }
+
     isLoading.value = true;
     errorMessage.value = '';
     try {
@@ -32,7 +44,7 @@ class RegisterController extends GetxController {
         name: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text,
-        role: selectedRole.value,
+        role: selectedRole.value!,
       );
 
       if (result['success'] == true) {

@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../themes/app_animations.dart';
 
@@ -392,6 +393,154 @@ class _ShimmerWidgetState extends State<ShimmerWidget>
         );
       },
       child: widget.child,
+    );
+  }
+}
+
+/// A premium, hardware-accelerated animated backdrop of shifting colorful gradient light
+/// orbs that simulates a dynamic high-definition restaurant ambient video background.
+class FluidVideoBackground extends StatefulWidget {
+  final Widget child;
+  const FluidVideoBackground({Key? key, required this.child}) : super(key: key);
+
+  @override
+  State<FluidVideoBackground> createState() => _FluidVideoBackgroundState();
+}
+
+class _FluidVideoBackgroundState extends State<FluidVideoBackground>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 20),
+      vsync: this,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    return Stack(
+      children: [
+        // Base dark luxury color
+        Container(color: const Color(0xFF0A0718)),
+
+        // Animated overlapping dynamic light orbs
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            final t = _controller.value;
+            
+            return Stack(
+              children: [
+                // Orb 1: Deep Royal Purple
+                Positioned(
+                  left: size.width * 0.1 + (size.width * 0.15 * math.sin(t * 2 * math.pi)),
+                  top: size.height * 0.1 + (size.height * 0.1 * math.cos(t * 2 * math.pi + 1)),
+                  child: Container(
+                    width: size.width * 0.6,
+                    height: size.width * 0.6,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFF6B4CE6).withOpacity(0.35),
+                          const Color(0xFF6B4CE6).withOpacity(0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Orb 2: Premium Cyan/Teal
+                Positioned(
+                  right: size.width * 0.1 + (size.width * 0.12 * math.cos(t * 2 * math.pi + 2)),
+                  bottom: size.height * 0.1 + (size.height * 0.15 * math.sin(t * 2 * math.pi)),
+                  child: Container(
+                    width: size.width * 0.55,
+                    height: size.width * 0.55,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFF00D9FF).withOpacity(0.28),
+                          const Color(0xFF00D9FF).withOpacity(0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Orb 3: Luxurious Purple-Pink
+                Positioned(
+                  left: size.width * 0.3 + (size.width * 0.1 * math.sin(t * 2 * math.pi + 4)),
+                  bottom: size.height * 0.3 + (size.height * 0.1 * math.cos(t * 2 * math.pi + 3)),
+                  child: Container(
+                    width: size.width * 0.5,
+                    height: size.width * 0.5,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFF9D4EDD).withOpacity(0.22),
+                          const Color(0xFF9D4EDD).withOpacity(0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Orb 4: Deep Wine Red / Sunset Accent
+                Positioned(
+                  right: size.width * 0.2 + (size.width * 0.08 * math.sin(t * 2 * math.pi + 1.5)),
+                  top: size.height * 0.3 + (size.height * 0.12 * math.cos(t * 2 * math.pi + 0.5)),
+                  child: Container(
+                    width: size.width * 0.45,
+                    height: size.width * 0.45,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFFFF2D55).withOpacity(0.18),
+                          const Color(0xFFFF2D55).withOpacity(0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+
+        // Deep OLED vignetting & ambient contrast overlay
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.3),
+                Colors.transparent,
+                Colors.black.withOpacity(0.6),
+              ],
+            ),
+          ),
+        ),
+
+        // The actual foreground content
+        widget.child,
+      ],
     );
   }
 }

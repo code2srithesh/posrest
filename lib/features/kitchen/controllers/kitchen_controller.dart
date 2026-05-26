@@ -10,9 +10,13 @@ class KitchenController extends GetxController {
   final preparingItems = <OrderItemModel>[].obs; // Items being prepared
   final isLoading = false.obs;
   final selectedOrderId = ''.obs;
+  final readyOrders = <OrderModel>[].obs; // Orders that are ready for pickup
+  final notificationQueue =
+      <String>[].obs; // Queue of ready order notifications
 
   // Safe snackbar call that won't crash in test environments
   void _showSnackbar(String title, String message) {
+    if (Get.testMode) return;
     try {
       Get.snackbar(title, message);
     } catch (e) {
@@ -42,13 +46,16 @@ class KitchenController extends GetxController {
       isLoading.value = true;
       final orders = await orderRepository.getOpenOrders();
 
-      // Filter orders that are not yet completed
+      // Filter orders that chef should see:
+      // - sent_to_kitchen: newly arrived orders
+      // - preparing: orders being worked on
+      // - ready: orders waiting for waiter pickup
       final activeOrders = orders
           .where(
             (o) =>
-                o.status != 'served' &&
-                o.status != 'completed' &&
-                o.status != 'cancelled',
+                o.status == 'sent_to_kitchen' ||
+                o.status == 'preparing' ||
+                o.status == 'ready',
           )
           .toList();
 
@@ -74,6 +81,31 @@ class KitchenController extends GetxController {
       _showSnackbar('Error', 'Failed to load kitchen orders: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // Start preparing an order - mark it as 'preparing' status
+  Future<void> startPreparingOrder(String orderId) async {
+    try {
+      final order = allOrders.firstWhere((o) => o.id == orderId);
+
+      // Update order status to 'preparing'
+      final updatedOrder = order.copyWith(
+        status: 'preparing',
+        items: order.items.map((item) {
+          // Update all items to preparing if they're still pending
+          if (item.status == OrderItemStatus.pending) {
+            return item.copyWith(status: OrderItemStatus.preparing);
+          }
+          return item;
+        }).toList(),
+      );
+
+      await orderRepository.updateOrder(updatedOrder);
+      _showSnackbar('Success', 'Started preparing order');
+      await loadKitchenOrders();
+    } catch (e) {
+      _showSnackbar('Error', 'Failed to start preparing: $e');
     }
   }
 
@@ -120,6 +152,7 @@ class KitchenController extends GetxController {
           // Mark entire order as ready
           final updatedOrder = order.copyWith(status: 'ready');
           await orderRepository.updateOrder(updatedOrder);
+          _notifyOrderReady(orderId, order.tableNumber);
           _showSnackbar('Success', 'Order ready for table!');
         } else {
           _showSnackbar('Success', '${item.itemName} is ready!');
@@ -139,11 +172,36 @@ class KitchenController extends GetxController {
       final updatedOrder = order.copyWith(status: 'served');
       await orderRepository.updateOrder(updatedOrder);
       allOrders.removeWhere((o) => o.id == orderId);
+      readyOrders.removeWhere((o) => o.id == orderId);
       _showSnackbar('Success', 'Order marked as served');
       await loadKitchenOrders();
     } catch (e) {
       _showSnackbar('Error', 'Failed to mark order served: $e');
     }
+  }
+
+  // Send notification that order is ready
+  void _notifyOrderReady(String orderId, int tableNumber) {
+    final notification =
+        'Table $tableNumber - Order #${orderId.substring(0, 8)} READY!';
+    notificationQueue.add(notification);
+
+    // Add to ready orders list
+    try {
+      final order = allOrders.firstWhere((o) => o.id == orderId);
+      if (!readyOrders.any((o) => o.id == orderId)) {
+        readyOrders.add(order);
+      }
+    } catch (e) {
+      // Order not found in current list
+    }
+
+    // Auto-clear notification after 5 seconds
+    Future.delayed(const Duration(seconds: 5), () {
+      if (notificationQueue.contains(notification)) {
+        notificationQueue.remove(notification);
+      }
+    });
   }
 
   // Get time remaining for preparation

@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -11,7 +12,7 @@ import '../models/payment_model.dart';
 
 class DatabaseHelper {
   static const String dbName = 'posrest.db';
-  static const int dbVersion = 1;
+  static const int dbVersion = 2;
 
   static final DatabaseHelper _instance = DatabaseHelper._internal();
 
@@ -30,8 +31,14 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // Use in-memory database for web platform (sqflite doesn't support web)
+    // Use in-memory database for web platform or unit/integration testing on host VM
     if (kIsWeb) {
+      return _MockDatabase._instance;
+    }
+    
+    // Only check Platform.environment on native platforms where dart:io Platform is supported
+    final isTest = Platform.environment.containsKey('FLUTTER_TEST');
+    if (isTest) {
       return _MockDatabase._instance;
     }
 
@@ -169,6 +176,9 @@ class DatabaseHelper {
         selectedModifierIds TEXT,
         modifierPrice REAL NOT NULL,
         totalPrice REAL NOT NULL,
+        status TEXT NOT NULL,
+        estimatedPrepTime INTEGER NOT NULL,
+        completedAt TEXT,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL,
         syncStatus TEXT NOT NULL,
@@ -226,7 +236,11 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle schema migrations here in future versions
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE order_items ADD COLUMN status TEXT NOT NULL DEFAULT "pending"');
+      await db.execute('ALTER TABLE order_items ADD COLUMN estimatedPrepTime INTEGER NOT NULL DEFAULT 15');
+      await db.execute('ALTER TABLE order_items ADD COLUMN completedAt TEXT');
+    }
   }
 
   // Close database
@@ -644,10 +658,68 @@ class _MockDatabase implements Database {
     List<Object?> a,
   ) {
     return d.where((r) {
-      if (w.contains('IS NULL'))
-        return r[w.split(' IS NULL')[0].trim()] == null;
-      if (w.contains('!=')) return r[w.split('!=')[0].trim()] != a[0];
-      if (w.contains('=')) return r[w.split('=')[0].trim()] == a[0];
+      // Respect deletedAt IS NULL constraints
+      if (w.contains('deletedAt IS NULL') && r['deletedAt'] != null) {
+        return false;
+      }
+
+      // tableNumber = ? AND deletedAt IS NULL
+      if (w.contains('tableNumber = ?')) {
+        return r['tableNumber'] == a[0];
+      }
+
+      // tableId = ? AND deletedAt IS NULL
+      if (w.contains('tableId = ?')) {
+        return r['tableId'] == a[0];
+      }
+
+      // categoryId = ? AND deletedAt IS NULL AND isAvailable = 1
+      if (w.contains('categoryId = ?')) {
+        final categoryMatch = r['categoryId'] == a[0];
+        if (w.contains('isAvailable = 1')) {
+          return categoryMatch && (r['isAvailable'] == 1 || r['isAvailable'] == true);
+        }
+        return categoryMatch;
+      }
+
+      // orderId = ? AND deletedAt IS NULL
+      if (w.contains('orderId = ?')) {
+        return r['orderId'] == a[0];
+      }
+
+      // id = ? AND deletedAt IS NULL
+      if (w.contains('id = ?')) {
+        return r['id'] == a[0];
+      }
+
+      // status != ? AND status != ? AND deletedAt IS NULL (e.g. open orders)
+      if (w.contains('status != ?')) {
+        if (a.length >= 2) {
+          return r['status'] != a[0] && r['status'] != a[1];
+        }
+        return r['status'] != a[0];
+      }
+
+      // status = ? (e.g. general status checks)
+      if (w.contains('status = ?')) {
+        return r['status'] == a[0];
+      }
+
+      // Fallback evaluation for other filters
+      if (w.contains('IS NULL')) {
+        final key = w.split(' IS NULL')[0].trim();
+        return r[key] == null;
+      }
+      if (w.contains('!=')) {
+        final parts = w.split('!=');
+        final key = parts[0].trim();
+        return r[key] != a[0];
+      }
+      if (w.contains('=')) {
+        final parts = w.split('=');
+        final key = parts[0].trim();
+        return r[key] == a[0];
+      }
       return true;
     }).toList();
   }

@@ -104,8 +104,11 @@ class OrderItemModel {
     List<String>? selectedModifierIds,
     double? modifierPrice,
     double? totalPrice,
+    OrderItemStatus? status,
+    int? estimatedPrepTime,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? completedAt,
     String? syncStatus,
     DateTime? deletedAt,
   }) {
@@ -120,8 +123,11 @@ class OrderItemModel {
       selectedModifierIds: selectedModifierIds ?? this.selectedModifierIds,
       modifierPrice: modifierPrice ?? this.modifierPrice,
       totalPrice: totalPrice ?? this.totalPrice,
+      status: status ?? this.status,
+      estimatedPrepTime: estimatedPrepTime ?? this.estimatedPrepTime,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      completedAt: completedAt ?? this.completedAt,
       syncStatus: syncStatus ?? this.syncStatus,
       deletedAt: deletedAt ?? this.deletedAt,
     );
@@ -133,7 +139,8 @@ class OrderModel {
   final String tableId;
   final int tableNumber;
   final String orderType; // 'dine-in', 'takeaway', 'delivery'
-  final String status; // open, preparing, served, paid, cancelled
+  final String
+  status; // open → sent_to_kitchen → preparing → ready → served → payment_pending → paid → cancelled
   final String? waiterName;
   final String? notes;
   final List<OrderItemModel> items;

@@ -11,6 +11,7 @@ import 'features/tables/screens/table_screen.dart';
 import 'features/orders/screens/order_screen.dart';
 import 'features/billing/screens/billing_screen.dart';
 import 'features/kitchen/screens/kitchen_screen.dart';
+import 'features/cashier/screens/cashier_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
             page: () => BillingScreen(orderId: Get.parameters['orderId'] ?? ''),
           ),
           GetPage(name: '/kitchen', page: () => const KitchenScreen()),
+          GetPage(name: '/cashier', page: () => const CashierScreen()),
           GetPage(
             name: '/admin/users',
             page: () => const UserManagementScreen(),
@@ -70,6 +72,8 @@ class MyApp extends StatelessWidget {
         return const UserManagementScreen();
       case 'chef':
         return const KitchenScreen();
+      case 'cashier':
+        return const CashierScreen();
       default:
         return const TableScreen();
     }

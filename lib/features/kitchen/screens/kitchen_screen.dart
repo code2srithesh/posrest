@@ -16,30 +16,23 @@ class KitchenScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Kitchen Display System'),
+            const Text('Kitchen Display System', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             Text(
               'Real-time order tracking',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
             ),
           ],
         ),
-        elevation: 8,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: AppColors.gradientBluePurple,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           tooltip: 'Back',
           onPressed: () {
             if (Navigator.of(context).canPop()) {
@@ -52,26 +45,19 @@ class KitchenScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: () => kitchenController.refreshOrders(),
           ),
           IconButton(
             tooltip: 'Logout',
             onPressed: () =>
                 AuthService().logout().then((_) => Get.offAllNamed('/login')),
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
           ),
           const ThemeToggleButton(compact: true),
         ],
       ),
-      body: AnimatedGradientBG(
-        colors: const [
-          AppColors.gradientStart,
-          AppColors.primaryDark,
-          AppColors.gradientEnd,
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+      body: FluidVideoBackground(
         child: Obx(() {
           if (kitchenController.isLoading.value) {
             return Center(
@@ -352,7 +338,7 @@ class KitchenScreen extends StatelessWidget {
               ),
             ],
           ),
-          if (item.notes.isNotEmpty) ...[
+          if ((item.notes ?? '').isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               '📝 ${item.notes}',

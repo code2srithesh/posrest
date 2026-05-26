@@ -296,6 +296,7 @@ class AuthService {
       case AppConstants.roleChef:
         return '/kitchen';
       case AppConstants.roleCashier:
+        return '/cashier';
       case AppConstants.roleWaiter:
       case AppConstants.roleManager:
       default:
@@ -357,7 +358,7 @@ class AuthService {
         id: const Uuid().v4(),
         name: name.trim(),
         email: normalizedEmail,
-        password: password,
+        password: PasswordService.hashPassword(password),
         role: role,
         isActive: false,
         createdAt: DateTime.now(),

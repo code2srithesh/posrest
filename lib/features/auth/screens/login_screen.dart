@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:ui';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/themes/app_colors.dart';
+import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../controllers/auth_controller.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,7 +26,9 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
     _controller = Get.put(AuthController());
-    _controller.resetLoginForm();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.resetLoginForm();
+    });
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -64,223 +68,160 @@ class _LoginScreenState extends State<LoginScreen>
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary.withOpacity(0.8),
-              AppColors.primary,
-              AppColors.primaryDark.withOpacity(0.9),
-            ],
+      body: FluidVideoBackground(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 24 : 48,
+              vertical: 24,
+            ),
+            child: FadeInWidget(
+              duration: const Duration(milliseconds: 1000),
+              child: SlideInWidget(
+                begin: const Offset(0, 0.1),
+                duration: const Duration(milliseconds: 1000),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Pulse animated logo
+                    _buildAnimatedLogo(),
+                    const SizedBox(height: 20),
+                    // Title with gradient color style
+                    Text(
+                      'POSRest',
+                      style: Theme.of(context).textTheme.displayMedium
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
+                    const SizedBox(height: 8),
+                    // Subtitle
+                    Text(
+                      'Luxury Lounge Point of Sale',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 16,
+                        letterSpacing: 0.5,
+                      ),
+                    ).animate().fadeIn(delay: 400.ms),
+                    const SizedBox(height: 40),
+                    // Glassmorphic login card
+                    _buildGlassmorphicCard(controller, isMobile),
+                    const SizedBox(height: 32),
+                    _buildAuthActions().animate().fadeIn(delay: 600.ms),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            // Animated background circles
-            Positioned(
-              top: -100,
-              right: -100,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  width: 300,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.1),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -50,
-              left: -50,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  width: 250,
-                  height: 250,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withOpacity(0.1),
-                  ),
-                ),
-              ),
-            ),
-            // Main content
-            Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 24 : 48,
-                  vertical: 24,
-                ),
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Logo with animation
-                        _buildAnimatedLogo(),
-                        const SizedBox(height: 16),
-                        // Title
-                        Text(
-                          'POSRest',
-                          style: Theme.of(context).textTheme.displayMedium
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Subtitle
-                        Text(
-                          'Restaurant Point of Sale System',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: Colors.white70, fontSize: 16),
-                        ),
-                        const SizedBox(height: 48),
-                        // Glassmorphic login card
-                        _buildGlassmorphicCard(controller, isMobile),
-                        const SizedBox(height: 24),
-                        _buildAuthActions(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
 
   Widget _buildAnimatedLogo() {
-    return ScaleTransition(
-      scale: _fadeAnimation,
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white.withOpacity(0.2),
-          border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
-        ),
-        child: const Center(child: Text('🍽️', style: TextStyle(fontSize: 50))),
+    return const PulseWidget(
+      child: GlassContainer(
+        padding: EdgeInsets.all(20),
+        borderRadius: BorderRadius.all(Radius.circular(50)),
+        backdropColor: Color(0x13FFFFFF),
+        child: Text('🍽️', style: TextStyle(fontSize: 48)),
       ),
     );
   }
 
   Widget _buildGlassmorphicCard(AuthController controller, bool isMobile) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-              width: 1.5,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 460),
+      child: GlassContainer(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+        borderRadius: BorderRadius.circular(24),
+        backdropColor: Color(0x13FFFFFF),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Email field
+            _buildGlassmorphicTextField(
+              controller: controller.emailController,
+              label: 'Email',
+              hint: 'admin@posrest.com',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              focusNode: _emailFocus,
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) {
+                FocusScope.of(context).requestFocus(_passwordFocus);
+              },
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 30,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Email field
-              _buildGlassmorphicTextField(
-                controller: controller.emailController,
-                label: 'Email',
-                hint: 'admin@posrest.com',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                focusNode: _emailFocus,
-                textInputAction: TextInputAction.next,
+            const SizedBox(height: 20),
+            // Password field
+            Obx(
+              () => _buildGlassmorphicTextField(
+                controller: controller.passwordController,
+                label: 'Password',
+                hint: 'Enter your password',
+                icon: Icons.lock_outlined,
+                obscureText: !controller.isPasswordVisible.value,
+                focusNode: _passwordFocus,
+                textInputAction: TextInputAction.done,
                 onSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_passwordFocus);
+                  if (!controller.isLoading.value) {
+                    controller.login();
+                  }
                 },
-              ),
-              const SizedBox(height: 20),
-              // Password field
-              Obx(
-                () => _buildGlassmorphicTextField(
-                  controller: controller.passwordController,
-                  label: 'Password',
-                  hint: 'Enter your password',
-                  icon: Icons.lock_outlined,
-                  obscureText: !controller.isPasswordVisible.value,
-                  focusNode: _passwordFocus,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) {
-                    if (!controller.isLoading.value) {
-                      controller.login();
-                    }
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      controller.isPasswordVisible.value
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: Colors.white70,
-                    ),
-                    onPressed: () {
-                      controller.isPasswordVisible.toggle();
-                    },
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.isPasswordVisible.value
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.white70,
                   ),
+                  onPressed: () {
+                    controller.isPasswordVisible.toggle();
+                  },
                 ),
               ),
-              const SizedBox(height: 8),
-              // Error message
-              Obx(
-                () => controller.errorMessage.isNotEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: AppColors.error.withOpacity(0.5),
-                            ),
-                          ),
-                          child: Text(
-                            controller.errorMessage.value,
-                            style: const TextStyle(
-                              color: AppColors.error,
-                              fontSize: 13,
-                            ),
+            ),
+            const SizedBox(height: 8),
+            // Error message
+            Obx(
+              () => controller.errorMessage.isNotEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.error.withOpacity(0.5),
                           ),
                         ),
-                      )
-                    : const SizedBox(height: 16),
+                        child: Text(
+                          controller.errorMessage.value,
+                          style: const TextStyle(
+                            color: AppColors.error,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    )
+                  : const SizedBox(height: 16),
+            ),
+            // Login button
+            Obx(
+              () => _buildGlassmorphicButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : () => controller.login(),
+                isLoading: controller.isLoading.value,
+                label: 'Sign In',
               ),
-              // Login button
-              Obx(
-                () => _buildGlassmorphicButton(
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : () => controller.login(),
-                  isLoading: controller.isLoading.value,
-                  label: 'Sign In',
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
