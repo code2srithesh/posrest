@@ -626,9 +626,9 @@ class TableScreen extends StatelessWidget {
                       ),
                       borderRadius: AppAnimations.radiusMedium,
                     ),
-                    child: const Icon(Icons.add, color: Colors.white),
+                    child: const Icon(Icons.add_circle_outline, color: Colors.white),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   const Expanded(
                     child: Text(
                       'Create New Table',
@@ -636,38 +636,81 @@ class TableScreen extends StatelessWidget {
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color: AppColors.lightText,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              TextFormField(
+              const SizedBox(height: 24),
+              TextField(
                 controller: tableNumberController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
                   labelText: 'Table Number',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintText: 'e.g., 13',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  prefixIcon: const Icon(Icons.tag, color: Colors.white70),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.06),
+                  fillColor: Colors.white.withValues(alpha: 0.08),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.accentTeal, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
-                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              TextField(
                 controller: capacityController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
                   labelText: 'Capacity (seats)',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintText: 'e.g., 4',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  prefixIcon: const Icon(Icons.people_outline, color: Colors.white70),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.06),
+                  fillColor: Colors.white.withValues(alpha: 0.08),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.accentTeal, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
-                keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               Row(
                 children: [
                   Expanded(
@@ -681,13 +724,20 @@ class TableScreen extends StatelessWidget {
                     child: PrimaryButton(
                       label: 'Create',
                       onPressed: () {
-                        if (tableNumberController.text.isNotEmpty &&
-                            capacityController.text.isNotEmpty) {
-                          controller.createTable(
-                            int.parse(tableNumberController.text),
-                            int.parse(capacityController.text),
+                        final tableNum = int.tryParse(tableNumberController.text.trim());
+                        final cap = int.tryParse(capacityController.text.trim());
+                        if (tableNum == null || cap == null || tableNum <= 0 || cap <= 0) {
+                          Get.snackbar(
+                            'Validation Error',
+                            'Please enter valid numbers greater than 0.',
+                            backgroundColor: AppColors.error,
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                            margin: const EdgeInsets.all(16),
                           );
+                          return;
                         }
+                        controller.createTable(tableNum, cap);
                       },
                     ),
                   ),

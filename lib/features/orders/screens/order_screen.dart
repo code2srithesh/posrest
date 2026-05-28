@@ -519,25 +519,41 @@ class OrderScreen extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 16),
                                           // Action Buttons
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: SecondaryButton(
-                                                  label: 'Cancel',
-                                                  onPressed: () => Get.back(),
+                                          Obx(() {
+                                            final order = orderController.currentOrder.value;
+                                            final status = order?.status ?? 'open';
+                                            
+                                            // If order is already in the kitchen workflow, enable "Request Bill"
+                                            final hasSentToKitchen = status == 'sent_to_kitchen' ||
+                                                status == 'preparing' ||
+                                                status == 'ready' ||
+                                                status == 'served';
+
+                                            return Row(
+                                              children: [
+                                                Expanded(
+                                                  child: SecondaryButton(
+                                                    label: 'Cancel',
+                                                    onPressed: () => Get.back(),
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: PrimaryButton(
-                                                  label: 'Send to Kitchen',
-                                                  onPressed: () =>
-                                                      orderController
-                                                          .completeOrder(),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: PrimaryButton(
+                                                    label: hasSentToKitchen ? 'Request Bill' : 'Send to Kitchen',
+                                                    backgroundColor: hasSentToKitchen ? AppColors.success : null,
+                                                    onPressed: () {
+                                                      if (hasSentToKitchen) {
+                                                        orderController.sendToPayment();
+                                                      } else {
+                                                        orderController.completeOrder();
+                                                      }
+                                                    },
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
+                                              ],
+                                            );
+                                          }),
                                         ],
                                       ),
                                     ),
@@ -1051,14 +1067,14 @@ class OrderScreen extends StatelessWidget {
                           ),
                           child: TextField(
                             controller: notes,
-                            decoration: InputDecoration(
-                              labelText: 'e.g., No onion, Less spicy',
-                              labelStyle: const TextStyle(
+                            decoration: const InputDecoration(
+                              hintText: 'e.g., No onion, Less spicy',
+                              hintStyle: TextStyle(
                                 color: AppColors.lightTextTertiary,
-                                fontSize: 12,
+                                fontSize: 13,
                               ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.all(12),
+                              contentPadding: EdgeInsets.all(14),
                             ),
                             style: const TextStyle(
                               color: AppColors.lightText,

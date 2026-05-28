@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:posrest/services/preferences_service.dart';
 import 'package:posrest/data/models/menu_item_model.dart';
-import 'package:posrest/data/models/order_model.dart';
 
 // Import the controllers and repositories
 import 'package:posrest/data/repositories/order_repository.dart';
