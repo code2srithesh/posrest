@@ -16,57 +16,57 @@ class KitchenScreen extends StatelessWidget {
     final kitchenController = Get.put(KitchenController());
     final role = AuthService.instance.getUserRole();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      bottomNavigationBar: const AdminBottomNavBar(currentIndex: 3),
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Kitchen Display System', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            Text(
-              'Real-time order tracking',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+    return FluidVideoBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        bottomNavigationBar: const AdminBottomNavBar(currentIndex: 3),
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Kitchen Display System', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(
+                'Real-time order tracking',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+              ),
+            ],
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          leading: (Navigator.of(context).canPop() || role == 'admin')
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  tooltip: 'Back',
+                  onPressed: () {
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                      return;
+                    }
+
+                    if (role == 'admin') {
+                      Get.offAllNamed('/admin/users');
+                      return;
+                    }
+                  },
+                )
+              : null,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () => kitchenController.refreshOrders(),
             ),
+            IconButton(
+              tooltip: 'Logout',
+              onPressed: () =>
+                  AuthService().logout().then((_) => Get.offAllNamed('/login')),
+              icon: const Icon(Icons.logout, color: Colors.white),
+            ),
+            const ThemeToggleButton(compact: true),
           ],
         ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          tooltip: 'Back',
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-              return;
-            }
-
-            if (role == 'admin') {
-              Get.offAllNamed('/admin/users');
-              return;
-            }
-
-            AuthService().logout().then((_) => Get.offAllNamed('/login'));
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () => kitchenController.refreshOrders(),
-          ),
-          IconButton(
-            tooltip: 'Logout',
-            onPressed: () =>
-                AuthService().logout().then((_) => Get.offAllNamed('/login')),
-            icon: const Icon(Icons.logout, color: Colors.white),
-          ),
-          const ThemeToggleButton(compact: true),
-        ],
-      ),
-      body: FluidVideoBackground(
-        child: Obx(() {
+        body: Obx(() {
           if (kitchenController.isLoading.value) {
             return Center(
               child: RotateWidget(

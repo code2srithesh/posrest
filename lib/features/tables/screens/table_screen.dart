@@ -30,73 +30,71 @@ class TableScreen extends StatelessWidget {
 
     final controller = Get.put(TableController());
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      bottomNavigationBar: const AdminBottomNavBar(currentIndex: 1),
-      appBar: AppBar(
-        title: const Text('Tables', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        elevation: 0,
+    return FluidVideoBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          tooltip: 'Back',
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-              return;
-            }
+        extendBodyBehindAppBar: true,
+        bottomNavigationBar: const AdminBottomNavBar(currentIndex: 1),
+        appBar: AppBar(
+          title: const Text('Tables', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          leading: (Navigator.of(context).canPop() || role == 'admin')
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  tooltip: 'Back',
+                  onPressed: () {
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                      return;
+                    }
 
-            if (role == 'admin') {
-              Get.offAllNamed('/admin/users');
-              return;
-            }
-
-            AuthService().logout().then((_) {
-              Get.offAllNamed('/login');
-            });
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Center(
-              child: Obx(
-                () => GlassContainer(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  borderRadius: AppAnimations.radiusCircle,
-                  backdropColor: AppColors.glassOverlayTealDeep,
-                  shadows: AppAnimations.shadowGlowTeal,
-                  child: Text(
-                    'Occupied ${controller.getTablesCount(AppConstants.statusOccupied)}/${controller.tables.length}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    if (role == 'admin') {
+                      Get.offAllNamed('/admin/users');
+                      return;
+                    }
+                  },
+                )
+              : null,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Center(
+                child: Obx(
+                  () => GlassContainer(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    borderRadius: AppAnimations.radiusCircle,
+                    backdropColor: AppColors.glassOverlayTealDeep,
+                    shadows: AppAnimations.shadowGlowTeal,
+                    child: Text(
+                      'Occupied ${controller.getTablesCount(AppConstants.statusOccupied)}/${controller.tables.length}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          const ThemeToggleButton(compact: true),
-          IconButton(
-            tooltip: 'Logout',
-            onPressed: () {
-              AuthService().logout().then((_) {
-                Get.offAllNamed('/login');
-              });
-            },
-            icon: const Icon(Icons.logout, color: Colors.white),
-          ),
-          const SizedBox(width: 6),
-        ],
-      ),
-      body: FluidVideoBackground(
-        child: Stack(
+            const ThemeToggleButton(compact: true),
+            IconButton(
+              tooltip: 'Logout',
+              onPressed: () {
+                AuthService().logout().then((_) {
+                  Get.offAllNamed('/login');
+                });
+              },
+              icon: const Icon(Icons.logout, color: Colors.white),
+            ),
+            const SizedBox(width: 6),
+          ],
+        ),
+        body: Stack(
           children: [
             Positioned(
               top: -80,

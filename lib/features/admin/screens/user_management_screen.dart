@@ -15,42 +15,36 @@ class UserManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(UserManagementController());
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      bottomNavigationBar: const AdminBottomNavBar(currentIndex: 0),
-
-      appBar: AppBar(
-        title: const Text('User Management', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+    return FluidVideoBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          tooltip: 'Back',
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-              return;
-            }
-
-            AuthService().logout().then((_) => Get.offAllNamed('/login'));
-          },
+        extendBodyBehindAppBar: true,
+        bottomNavigationBar: const AdminBottomNavBar(currentIndex: 0),
+        appBar: AppBar(
+          title: const Text('User Management', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: Navigator.of(context).canPop()
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  tooltip: 'Back',
+                  onPressed: () => Navigator.of(context).pop(),
+                )
+              : null,
+          actions: [
+            IconButton(
+              onPressed: controller.loadUsers,
+              icon: const Icon(Icons.refresh, color: Colors.white),
+            ),
+            IconButton(
+              tooltip: 'Logout',
+              onPressed: () =>
+                  AuthService().logout().then((_) => Get.offAllNamed('/login')),
+              icon: const Icon(Icons.logout, color: Colors.white),
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            onPressed: controller.loadUsers,
-            icon: const Icon(Icons.refresh, color: Colors.white),
-          ),
-          IconButton(
-            tooltip: 'Logout',
-            onPressed: () =>
-                AuthService().logout().then((_) => Get.offAllNamed('/login')),
-            icon: const Icon(Icons.logout, color: Colors.white),
-          ),
-        ],
-      ),
-      body: FluidVideoBackground(
-        child: SafeArea(
+        body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 1150;
