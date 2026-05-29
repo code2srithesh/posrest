@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/themes/app_animations.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
+import '../../../core/widgets/admin_bottom_nav_bar.dart';
 import '../../../data/models/user_model.dart';
 import '../../../services/auth_service.dart';
 import '../controllers/user_management_controller.dart';
@@ -17,6 +18,8 @@ class UserManagementScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
+      bottomNavigationBar: const AdminBottomNavBar(currentIndex: 0),
+
       appBar: AppBar(
         title: const Text('User Management', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,

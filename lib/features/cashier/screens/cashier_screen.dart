@@ -4,6 +4,7 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_animations.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
+import '../../../core/widgets/admin_bottom_nav_bar.dart';
 import '../../../services/auth_service.dart';
 import '../controllers/cashier_controller.dart';
 
@@ -19,9 +20,12 @@ class CashierScreen extends StatelessWidget {
       cashierController.loadPendingPayments();
     });
 
+    final role = AuthService.instance.getUserRole();
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
+      bottomNavigationBar: const AdminBottomNavBar(currentIndex: 2),
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,6 +46,10 @@ class CashierScreen extends StatelessWidget {
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
+              return;
+            }
+            if (role == 'admin') {
+              Get.offAllNamed('/admin/users');
               return;
             }
             AuthService().logout().then((_) => Get.offAllNamed('/login'));

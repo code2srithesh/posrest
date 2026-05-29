@@ -5,6 +5,7 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/widgets/custom_widgets.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../../../core/widgets/theme_toggle_button.dart';
+import '../../../core/widgets/admin_bottom_nav_bar.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../services/auth_service.dart';
 import '../controllers/table_controller.dart';
@@ -32,6 +33,7 @@ class TableScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
+      bottomNavigationBar: const AdminBottomNavBar(currentIndex: 1),
       appBar: AppBar(
         title: const Text('Tables', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         elevation: 0,
@@ -42,6 +44,11 @@ class TableScreen extends StatelessWidget {
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
+              return;
+            }
+
+            if (role == 'admin') {
+              Get.offAllNamed('/admin/users');
               return;
             }
 
