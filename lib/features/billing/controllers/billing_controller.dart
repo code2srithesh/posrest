@@ -5,6 +5,10 @@ import '../../../data/models/order_model.dart';
 import '../../../data/models/payment_model.dart';
 import '../../../data/repositories/order_repository.dart';
 import '../../../data/repositories/payment_repository.dart';
+import '../../../data/repositories/table_repository.dart';
+import '../../tables/controllers/table_controller.dart';
+import '../../orders/controllers/order_controller.dart';
+import '../../admin/controllers/user_management_controller.dart';
 
 class BillingController extends GetxController {
   void _showSnackbar(String title, String message, {bool isError = false}) {
@@ -20,6 +24,7 @@ class BillingController extends GetxController {
   }
   final orderRepository = OrderRepository();
   final paymentRepository = PaymentRepository();
+  final tableRepository = TableRepository();
 
   final currentOrder = Rxn<OrderModel>();
   final isLoading = false.obs;
@@ -172,6 +177,35 @@ class BillingController extends GetxController {
       final updatedOrder = currentOrder.value!.copyWith(status: 'paid');
       await orderRepository.updateOrder(updatedOrder);
       currentOrder.value = updatedOrder;
+
+      // Release table to free/vacant status
+      await tableRepository.setTableFree(updatedOrder.tableId);
+
+      // 1. Refresh TableController floor plan to show FREE (green) instantly
+      try {
+        if (Get.isRegistered<TableController>()) {
+          final tableController = Get.find<TableController>();
+          await tableController.loadTables();
+        }
+      } catch (_) {}
+
+      // 2. Clear order cache in OrderController so table is blank
+      try {
+        if (Get.isRegistered<OrderController>()) {
+          final orderController = Get.find<OrderController>();
+          if (orderController.currentOrder.value?.id == updatedOrder.id) {
+            orderController.clearOrder();
+          }
+        }
+      } catch (_) {}
+
+      // 3. Refresh Admin ERP Dashboard matrix instantly
+      try {
+        if (Get.isRegistered<UserManagementController>()) {
+          final adminController = Get.find<UserManagementController>();
+          await adminController.loadDashboardData();
+        }
+      } catch (_) {}
 
       _showSnackbar('Success', 'Payment processed successfully');
       return true;

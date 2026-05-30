@@ -407,13 +407,13 @@ class TableScreen extends StatelessWidget {
             table.currentOrderId != null) {
           Get.toNamed(
             '/order',
-            arguments: {'orderId': table.currentOrderId, 'tableId': table.id},
-          );
+            arguments: {'orderId': table.currentOrderId, 'tableId': table.id, 'tableNumber': table.tableNumber},
+          )?.then((_) => controller.loadTables());
         } else if (table.status == AppConstants.statusFree) {
           Get.toNamed(
             '/order/create',
             arguments: {'tableId': table.id, 'tableNumber': table.tableNumber},
-          );
+          )?.then((_) => controller.loadTables());
         }
       },
       child: GlassContainer(

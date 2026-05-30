@@ -38,13 +38,21 @@ class OrderScreen extends StatelessWidget {
     final arguments = Get.arguments ?? {};
     final tableId = arguments['tableId'] as String?;
     final tableNumber = arguments['tableNumber'] as int?;
+    final orderId = arguments['orderId'] as String?;
 
-    // Create order if needed
-    if (tableId != null &&
-        tableNumber != null &&
-        orderController.currentOrder.value == null) {
-      Future.microtask(() => orderController.createOrder(tableId, tableNumber));
-    }
+    // Safe initialization/loading of table orders on screen open
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (orderId != null) {
+        if (orderController.currentOrder.value?.id != orderId) {
+          orderController.loadOrder(orderId);
+        }
+      } else if (tableId != null && tableNumber != null) {
+        if (orderController.currentOrder.value?.tableId != tableId ||
+            orderController.currentOrder.value?.status != AppConstants.orderStatusOpen) {
+          orderController.createOrder(tableId, tableNumber);
+        }
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -191,113 +199,6 @@ class OrderScreen extends StatelessWidget {
                           flex: isCompact ? 3 : 3,
                           child: Column(
                             children: [
-                              SizedBox(
-                                height: 66,
-                                child: ScrollConfiguration(
-                                  behavior: const MaterialScrollBehavior()
-                                      .copyWith(overscroll: false),
-                                  child: Scrollbar(
-                                    thumbVisibility: false,
-                                    child: ListView.builder(
-                                      physics: const BouncingScrollPhysics(),
-                                      scrollDirection: Axis.horizontal,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                      itemCount:
-                                          menuController.categories.length,
-                                      itemBuilder: (context, index) {
-                                        final category =
-                                            menuController.categories[index];
-                                        final isSelected =
-                                            menuController
-                                                .selectedCategoryId
-                                                .value ==
-                                            category.id;
-
-                                        return SlideInWidget(
-                                          begin: Offset((index - 0.5) * 0.2, 0),
-                                          duration: Duration(
-                                            milliseconds: 300 + (index * 50),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 6,
-                                            ),
-                                            child: GlassContainer(
-                                              backdropColor: isSelected
-                                                  ? AppColors
-                                                        .glassOverlayTealMed
-                                                  : AppColors
-                                                        .glassOverlayPurple,
-                                              shadows: isSelected
-                                                  ? AppAnimations.shadowGlowTeal
-                                                  : AppAnimations.shadowSmall,
-                                              interactive: true,
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    menuController
-                                                        .loadItemsByCategory(
-                                                          category.id,
-                                                        );
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 12,
-                                                        ),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          _getCategoryIcon(
-                                                            category.name,
-                                                          ),
-                                                          size: 18,
-                                                          color: isSelected
-                                                              ? AppColors
-                                                                    .accentTeal
-                                                              : AppColors
-                                                                    .lightTextTertiary,
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
-                                                        Text(
-                                                          category.name,
-                                                          style: TextStyle(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                isSelected
-                                                                ? FontWeight
-                                                                      .w700
-                                                                : FontWeight
-                                                                      .w600,
-                                                            color: isSelected
-                                                                ? AppColors
-                                                                      .accentTeal
-                                                                : AppColors
-                                                                      .lightTextSecondary,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
                               Expanded(
                                 child: ScrollConfiguration(
                                   behavior: const MaterialScrollBehavior()
@@ -317,10 +218,10 @@ class OrderScreen extends StatelessWidget {
                                             childAspectRatio: 0.77,
                                           ),
                                       itemCount:
-                                          menuController.menuItems.length,
+                                          menuController.filteredMenuItems.length,
                                       itemBuilder: (context, index) {
                                         final item =
-                                            menuController.menuItems[index];
+                                            menuController.filteredMenuItems[index];
                                         return SlideInWidget(
                                           begin: Offset(
                                             index.isEven ? -0.2 : 0.2,
@@ -580,123 +481,166 @@ class OrderScreen extends StatelessWidget {
     OrderController orderController,
     BuildContext context,
   ) {
-    return GlassContainer(
-      backdropColor: AppColors.glassOverlayTealMed,
-      shadows: AppAnimations.shadowMedium,
-      interactive: true,
-      borderRadius: AppAnimations.radiusLarge,
-      child: GestureDetector(
-        onTap: () => _showItemDetailsDialog(item, orderController, context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Item Icon/Image placeholder with gradient
-            Container(
-              width: double.infinity,
-              height: 80,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary.withOpacity(0.3),
-                    AppColors.accentTeal.withOpacity(0.3),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+    return Obx(() {
+      final existingIndex = orderController.currentOrderItems.indexWhere(
+        (i) => i.menuItemId == item.id,
+      );
+      final hasSelected = existingIndex >= 0;
+      final quantity = hasSelected ? orderController.currentOrderItems[existingIndex].quantity : 0;
+
+      final cardBorderColor = hasSelected ? AppColors.accentTeal : Colors.white.withOpacity(0.08);
+      final cardBorderWidth = hasSelected ? 2.0 : 1.0;
+
+      return GlassContainer(
+        backdropColor: hasSelected ? AppColors.glassOverlayTealDeep : AppColors.glassOverlayTealMed,
+        shadows: hasSelected ? AppAnimations.shadowGlowTeal : AppAnimations.shadowMedium,
+        interactive: true,
+        borderRadius: AppAnimations.radiusLarge,
+        child: GestureDetector(
+          onTap: () => _showItemDetailsDialog(item, orderController, context),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: AppAnimations.radiusLarge,
+                  border: Border.all(color: cardBorderColor, width: cardBorderWidth),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Icon(
-                  _getItemIcon(item.name),
-                  size: 36,
-                  color: AppColors.accentTeal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Item Name
-            Text(
-              item.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.lightText,
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Description
-            Text(
-              item.description ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.lightTextSecondary,
-              ),
-            ),
-            const Spacer(),
-            // Footer
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
+                padding: const EdgeInsets.all(12),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '₹${item.price.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.accentTeal,
+                    // Item Icon/Image placeholder with gradient
+                    Container(
+                      width: double.infinity,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0.3),
+                            AppColors.accentTeal.withOpacity(0.3),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      child: Center(
+                        child: Icon(
+                          _getItemIcon(item.name),
+                          size: 36,
+                          color: AppColors.accentTeal,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // Item Name
+                    Text(
+                      item.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Description
+                    Text(
+                      item.description ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.lightTextSecondary,
+                      ),
+                    ),
+                    const Spacer(),
+                    // Footer
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '₹${item.price.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.accentTeal,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            if (item.isVegetarian)
+                              Tooltip(
+                                message: 'Vegetarian',
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Icon(
+                                    Icons.eco,
+                                    size: 14,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                              ),
+                            if (item.isSpicy ?? false)
+                              Tooltip(
+                                message: 'Spicy',
+                                child: Container(
+                                  margin: const EdgeInsets.only(left: 6),
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Icon(
+                                    Icons.local_fire_department,
+                                    size: 14,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    if (item.isVegetarian)
-                      Tooltip(
-                        message: 'Vegetarian',
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Icon(
-                            Icons.eco,
-                            size: 14,
-                            color: AppColors.success,
-                          ),
-                        ),
+              ),
+              if (hasSelected)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: AppAnimations.shadowGlow,
+                    ),
+                    child: Text(
+                      '${quantity}x',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
                       ),
-                    if (item.isSpicy ?? false)
-                      Tooltip(
-                        message: 'Spicy',
-                        child: Container(
-                          margin: const EdgeInsets.only(left: 6),
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Icon(
-                            Icons.local_fire_department,
-                            size: 14,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ),
-                  ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildOrderItemTile(

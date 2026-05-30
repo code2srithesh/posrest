@@ -97,6 +97,17 @@ class AuthService {
           updatedAt: DateTime.now(),
           syncStatus: 'synced',
         ),
+        UserModel(
+          id: const Uuid().v4(),
+          name: 'Srithesh Customer',
+          email: 'srithesh@customer.com',
+          password: 'customer123',
+          role: 'customer',
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncStatus: 'synced',
+        ),
       ];
 
       for (final user in demoUsers) {
@@ -269,6 +280,7 @@ class AuthService {
       AppConstants.roleWaiter,
       AppConstants.roleCashier,
       AppConstants.roleChef,
+      'customer',
     ];
   }
 
@@ -284,6 +296,8 @@ class AuthService {
         return 'Waiter';
       case AppConstants.roleChef:
         return 'Kitchen Chef';
+      case 'customer':
+        return 'Customer';
       default:
         return role;
     }

@@ -38,6 +38,10 @@ class MenuRepository {
     await _dbHelper.updateMenuItem(item);
   }
 
+  Future<void> deleteMenuItem(String itemId) async {
+    await _dbHelper.deleteMenuItem(itemId);
+  }
+
   // ==================== MODIFIER OPERATIONS ====================
   Future<String> createModifier(ModifierModel modifier) async {
     await _dbHelper.insertModifier(modifier);
@@ -72,5 +76,9 @@ class MenuRepository {
       return item;
     }
     return item;
+  }
+
+  Future<List<MenuItemModel>> getAllMenuItems() {
+    return _dbHelper.getAllMenuItems();
   }
 }

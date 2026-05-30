@@ -410,6 +410,16 @@ class DatabaseHelper {
     return result.map((map) => MenuItemModel.fromMap(map)).toList();
   }
 
+  Future<List<MenuItemModel>> getAllMenuItems() async {
+    final db = await database;
+    final result = await db.query(
+      'menu_items',
+      where: 'deletedAt IS NULL AND isAvailable = 1',
+      orderBy: 'displayOrder',
+    );
+    return result.map((map) => MenuItemModel.fromMap(map)).toList();
+  }
+
   Future<int> updateMenuItem(MenuItemModel item) async {
     final db = await database;
     return await db.update(
@@ -418,6 +428,11 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [item.id],
     );
+  }
+
+  Future<int> deleteMenuItem(String id) async {
+    final db = await database;
+    return await db.delete('menu_items', where: 'id = ?', whereArgs: [id]);
   }
 
   // ==================== MODIFIER OPERATIONS ====================
@@ -550,6 +565,15 @@ class DatabaseHelper {
       'payments',
       where: 'orderId = ? AND deletedAt IS NULL',
       whereArgs: [orderId],
+    );
+    return result.map((map) => PaymentModel.fromMap(map)).toList();
+  }
+
+  Future<List<PaymentModel>> getAllPayments() async {
+    final db = await database;
+    final result = await db.query(
+      'payments',
+      where: 'deletedAt IS NULL',
     );
     return result.map((map) => PaymentModel.fromMap(map)).toList();
   }

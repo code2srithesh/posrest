@@ -16,6 +16,11 @@ class KitchenScreen extends StatelessWidget {
     final kitchenController = Get.put(KitchenController());
     final role = AuthService.instance.getUserRole();
 
+    // Trigger loading orders on screen launch
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      kitchenController.loadKitchenOrders();
+    });
+
     return FluidVideoBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,

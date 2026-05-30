@@ -27,17 +27,30 @@ class MenuController extends GetxController {
       isLoading.value = true;
 
       final menu = await menuRepository.getCompleteMenu();
-      categories.value = menu['categories'] ?? [];
+      final List<MenuCategoryModel> loadedCategories = menu['categories'] ?? [];
+      categories.value = loadedCategories.where((c) => c.name.trim().isNotEmpty).toList();
       completeMenu.value = menu;
 
       if (categories.isEmpty) {
         await _createDefaultMenu();
-      } else if (categories.isNotEmpty) {
-        selectedCategoryId.value = categories.first.id;
-        loadItemsByCategory(categories.first.id);
+      } else {
+        await loadAllMenuItems();
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load menu: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loadAllMenuItems() async {
+    try {
+      isLoading.value = true;
+      final items = await menuRepository.getAllMenuItems();
+      menuItems.value = items;
+      applyAllFilters();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load all menu items: $e');
     } finally {
       isLoading.value = false;
     }
@@ -554,13 +567,6 @@ class MenuController extends GetxController {
   // Apply all filters together
   void applyAllFilters() {
     List<MenuItemModel> results = menuItems;
-
-    // Filter by category
-    if (selectedCategoryId.value.isNotEmpty) {
-      results = results
-          .where((item) => item.categoryId == selectedCategoryId.value)
-          .toList();
-    }
 
     // Filter by search query
     if (searchMenu.value.isNotEmpty) {

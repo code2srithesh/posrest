@@ -17,6 +17,10 @@ class PaymentRepository {
     await _dbHelper.updatePayment(payment);
   }
 
+  Future<List<PaymentModel>> getAllPayments() {
+    return _dbHelper.getAllPayments();
+  }
+
   Future<double> getOrderTotalPayments(String orderId) async {
     final payments = await getPaymentsByOrderId(orderId);
     double total = 0;

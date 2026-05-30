@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
@@ -13,6 +14,8 @@ class KitchenController extends GetxController {
   final readyOrders = <OrderModel>[].obs; // Orders that are ready for pickup
   final notificationQueue =
       <String>[].obs; // Queue of ready order notifications
+
+  Timer? _refreshTimer;
 
   // Safe snackbar call that won't crash in test environments
   void _showSnackbar(String title, String message) {
@@ -31,13 +34,18 @@ class KitchenController extends GetxController {
     // loadKitchenOrders is called when the screen opens (from KitchenScreen)
     // Not called here to avoid issues in unit tests
 
-    // Schedule auto-refresh every 10 seconds (only if orders are loaded)
-    ever(allOrders, (_) async {
-      await Future.delayed(Duration(seconds: 10));
-      if (allOrders.isNotEmpty) {
-        await loadKitchenOrders();
-      }
-    });
+    // Schedule auto-refresh every 4 seconds to ensure rapid updates in real restaurant operations
+    if (!Get.testMode) {
+      _refreshTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+        loadKitchenOrders();
+      });
+    }
+  }
+
+  @override
+  void onClose() {
+    _refreshTimer?.cancel();
+    super.onClose();
   }
 
   // Load all orders for kitchen display
