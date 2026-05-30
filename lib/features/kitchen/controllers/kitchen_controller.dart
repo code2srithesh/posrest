@@ -165,6 +165,33 @@ class KitchenController extends GetxController {
     }
   }
 
+  // Mark entire order as ready for waiter pickup
+  Future<void> markOrderReady(String orderId) async {
+    try {
+      final order = allOrders.firstWhere((o) => o.id == orderId);
+      final updatedOrder = order.copyWith(
+        status: 'ready',
+        items: order.items.map((item) {
+          if (item.status == OrderItemStatus.pending ||
+              item.status == OrderItemStatus.preparing) {
+            return item.copyWith(
+              status: OrderItemStatus.ready,
+              completedAt: DateTime.now(),
+            );
+          }
+          return item;
+        }).toList(),
+      );
+
+      await orderRepository.updateOrder(updatedOrder);
+      _notifyOrderReady(orderId, order.tableNumber);
+      _showSnackbar('Success', 'Order is ready for pickup!');
+      await loadKitchenOrders();
+    } catch (e) {
+      _showSnackbar('Error', 'Failed to mark order ready: $e');
+    }
+  }
+
   // Mark entire order as served
   Future<void> markOrderServed(String orderId) async {
     try {

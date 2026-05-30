@@ -272,44 +272,70 @@ class KitchenScreen extends StatelessWidget {
 
             // Action Buttons
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: AppColors.gradientPrimaryTeal,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: AppAnimations.radiusLarge,
-                  boxShadow: AppAnimations.shadowGlow,
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => controller.markOrderServed(order.id),
-                    borderRadius: AppAnimations.radiusLarge,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.check_circle, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text(
-                            'Mark Served',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
+            Builder(
+              builder: (context) {
+                String label;
+                IconData icon;
+                List<Color> gradientColors;
+                VoidCallback onTap;
+
+                if (order.status == 'sent_to_kitchen') {
+                  label = 'Start Preparing';
+                  icon = Icons.local_fire_department;
+                  gradientColors = const [AppColors.accentOrange, Color(0xFFD84315)];
+                  onTap = () => controller.startPreparingOrder(order.id);
+                } else if (order.status == 'preparing') {
+                  label = 'Mark Ready';
+                  icon = Icons.done;
+                  gradientColors = const [AppColors.accentTeal, AppColors.accentTealDark];
+                  onTap = () => controller.markOrderReady(order.id);
+                } else {
+                  label = 'Mark Served';
+                  icon = Icons.check_circle;
+                  gradientColors = const [AppColors.success, Color(0xFF2E7D32)];
+                  onTap = () => controller.markOrderServed(order.id);
+                }
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: gradientColors,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: AppAnimations.radiusLarge,
+                      boxShadow: AppAnimations.shadowGlow,
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onTap,
+                        borderRadius: AppAnimations.radiusLarge,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(icon, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Text(
+                                label,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
