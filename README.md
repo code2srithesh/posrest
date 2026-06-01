@@ -86,7 +86,8 @@ lib/
 
 1. **Clone and navigate to the project directory:**
    ```bash
-   cd /Users/srithesh/Desktop/posrest
+   git clone <repository-url>
+   cd posrest
    ```
 
 2. **Retrieve package dependencies:**
@@ -98,7 +99,7 @@ lib/
    ```bash
    flutter build web --release
    ```
-   *The compiled production files will be output to `/build/web` for immediate deployment to your Netlify dashboard.*
+   *The compiled production files will be output to `build/web` for immediate deployment to your Netlify dashboard.*
 
 4. **Launch the application in debug mode:**
    ```bash
