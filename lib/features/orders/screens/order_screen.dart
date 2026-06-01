@@ -55,11 +55,18 @@ class OrderScreen extends StatelessWidget {
       }
     });
 
-    return Scaffold(
-      key: scaffoldKey,
-      drawer: _buildCategoryDrawer(context, menuController, orderController),
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          await orderController.cancelEmptyOrder();
+        }
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        drawer: _buildCategoryDrawer(context, menuController, orderController),
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -215,6 +222,44 @@ class OrderScreen extends StatelessWidget {
                           flex: isCompact ? 3 : 3,
                           child: Column(
                             children: [
+                              Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.darkCard.withOpacity(0.4),
+                                  borderRadius: AppAnimations.radiusLarge,
+                                  border: Border.all(color: Colors.white.withOpacity(0.04)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.restaurant_menu, color: AppColors.accentTeal, size: 18),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Restaurant Food Menu',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Tap items below to add to Table ${tableNumber ?? 'N/A'}\'s order cart',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.white.withOpacity(0.6),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                               Expanded(
                                 child: ScrollConfiguration(
                                   behavior: const MaterialScrollBehavior()
@@ -531,7 +576,7 @@ class OrderScreen extends StatelessWidget {
           ),
         );
       }),
-    );
+    ));
   }
 
   Widget _buildMenuItemCard(

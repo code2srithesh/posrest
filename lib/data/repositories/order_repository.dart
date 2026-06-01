@@ -86,4 +86,8 @@ class OrderRepository {
     }
     return total;
   }
+
+  Future<void> deleteOrder(String orderId) async {
+    await _dbHelper.deleteOrder(orderId);
+  }
 }

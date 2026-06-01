@@ -8,6 +8,7 @@ import '../../../data/repositories/table_repository.dart';
 import '../../../data/repositories/menu_repository.dart';
 import '../../../services/preferences_service.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../tables/controllers/table_controller.dart';
 
 class OrderController extends GetxController {
   final orderRepository = OrderRepository();
@@ -314,5 +315,20 @@ class OrderController extends GetxController {
       count += item.quantity;
     }
     return count;
+  }
+
+  Future<void> cancelEmptyOrder() async {
+    try {
+      final order = currentOrder.value;
+      if (order != null && currentOrderItems.isEmpty) {
+        await orderRepository.deleteOrder(order.id);
+        await tableRepository.setTableFree(order.tableId);
+        try {
+          if (Get.isRegistered<TableController>()) {
+            await Get.find<TableController>().loadTables();
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
   }
 }

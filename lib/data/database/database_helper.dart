@@ -561,6 +561,12 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> deleteOrder(String id) async {
+    final db = await database;
+    await db.delete('order_items', where: 'orderId = ?', whereArgs: [id]);
+    return await db.delete('orders', where: 'id = ?', whereArgs: [id]);
+  }
+
   // ==================== PAYMENT OPERATIONS ====================
   Future<int> insertPayment(PaymentModel payment) async {
     final db = await database;

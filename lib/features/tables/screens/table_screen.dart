@@ -191,7 +191,7 @@ class TableScreen extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Next Gen Table Matrix',
+                                        'Restaurant Tables Plan',
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleLarge
@@ -202,7 +202,7 @@ class TableScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Glassmorphic live floor plan with animated status cards',
+                                        'Tap a table to manage dine-in orders and settlements',
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall
