@@ -31,7 +31,9 @@ class MenuController extends GetxController {
       categories.value = loadedCategories.where((c) => c.name.trim().isNotEmpty).toList();
       completeMenu.value = menu;
 
-      if (categories.isEmpty) {
+      // If categories is empty or represents the old sample menu, clear and seed premium catalog
+      if (categories.isEmpty || categories.length <= 4 || categories.any((c) => c.name == 'Starters')) {
+        await menuRepository.clearMenuOnly();
         await _createDefaultMenu();
       } else {
         await loadAllMenuItems();
@@ -58,467 +60,360 @@ class MenuController extends GetxController {
 
   Future<void> _createDefaultMenu() async {
     try {
-      // Create categories
-      final categories = [
+      final now = DateTime.now();
+      
+      // 1. Create categories data
+      final categoriesList = [
         MenuCategoryModel(
           id: const Uuid().v4(),
-          name: 'Starters',
-          description: 'Appetizers and starters',
+          name: 'Appetizers & Starters',
+          description: 'Premium tandoor and clay oven appetizers',
           displayOrder: 1,
           isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
         ),
         MenuCategoryModel(
           id: const Uuid().v4(),
           name: 'Main Course',
-          description: 'Main dishes',
+          description: 'Rich, authentic regional curries and main dishes',
           displayOrder: 2,
           isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
         ),
         MenuCategoryModel(
           id: const Uuid().v4(),
-          name: 'Drinks',
-          description: 'Beverages',
+          name: 'Breads & Rice',
+          description: 'Clay-oven flatbreads and aromatic biryanis',
           displayOrder: 3,
           isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
         ),
         MenuCategoryModel(
           id: const Uuid().v4(),
           name: 'Desserts',
-          description: 'Sweet treats',
+          description: 'Traditional sweets and contemporary desserts',
           displayOrder: 4,
           isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuCategoryModel(
+          id: const Uuid().v4(),
+          name: 'Craft Mocktails',
+          description: 'Artisanal cold refreshing beverages',
+          displayOrder: 5,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          syncStatus: AppConstants.syncStatusPending,
+        ),
+        MenuCategoryModel(
+          id: const Uuid().v4(),
+          name: 'Hot Beverages',
+          description: 'Freshly brewed warm teas and gourmet filter coffee',
+          displayOrder: 6,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
         ),
       ];
 
-      for (final cat in categories) {
+      for (final cat in categoriesList) {
         await menuRepository.createCategory(cat);
       }
 
-      // Create sample menu items
-      final startersId = categories[0].id;
-      final mainId = categories[1].id;
-      final drinksId = categories[2].id;
-      final dessertsId = categories[3].id;
+      // Map to quickly look up category IDs by name
+      final catId = (String name) => categoriesList.firstWhere((c) => c.name == name).id;
 
-      final starters = [
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: startersId,
-          name: 'Samosa (2 pcs)',
-          description: 'Crispy pastry with spiced potato filling',
-          price: 80,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: true,
-          displayOrder: 1,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: startersId,
-          name: 'Onion Pakora',
-          description: 'Crispy onion fritters in gram flour batter',
-          price: 100,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: true,
-          displayOrder: 2,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: startersId,
-          name: 'Paneer Tikka',
-          description: 'Grilled cottage cheese with spices',
-          price: 180,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 3,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: startersId,
-          name: 'Chicken Tikka',
-          description: 'Tender chicken pieces marinated and grilled',
-          price: 220,
-          isAvailable: true,
-          isVegetarian: false,
-          isSpicy: false,
-          displayOrder: 4,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: startersId,
-          name: 'Spring Roll',
-          description: 'Crispy rolls with vegetable filling',
-          price: 120,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 5,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
+      // 2. Define premium menu items
+      final rawItems = [
+        // Appetizers & Starters
+        {
+          'cat': 'Appetizers & Starters',
+          'name': 'Crispy Paneer Bites',
+          'desc': 'Panko-crusted cottage cheese cubes tossed in spicy glaze',
+          'price': 240.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Appetizers & Starters',
+          'name': 'Afghani Malai Chaap',
+          'desc': 'Soy chops marinated in rich cashew-cream paste, charcoal-roasted',
+          'price': 220.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Appetizers & Starters',
+          'name': 'Stuffed Mushroom Caps',
+          'desc': 'Cremini mushrooms stuffed with seasoned spinach, garlic, and cheddar',
+          'price': 260.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Appetizers & Starters',
+          'name': 'Tandoori Chicken Wings',
+          'desc': 'Smoky chicken wings marinated in spices and charred in clay oven',
+          'price': 320.0,
+          'isVeg': false,
+          'isSpicy': true,
+        },
+        {
+          'cat': 'Appetizers & Starters',
+          'name': 'Pepper Garlic Prawns',
+          'desc': 'Plump prawns sauteed with aromatic black pepper, garlic, and spring onion',
+          'price': 380.0,
+          'isVeg': false,
+          'isSpicy': true,
+        },
+
+        // Main Course
+        {
+          'cat': 'Main Course',
+          'name': 'Paneer Butter Masala',
+          'desc': 'Cottage cheese in velvety, rich sweet-spicy tomato gravy - 15 mins',
+          'price': 340.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Main Course',
+          'name': 'Dal Bukhara',
+          'desc': 'Slow-cooked black lentils simmered overnight with cream and butter - 25 mins',
+          'price': 280.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Main Course',
+          'name': 'Murgh Makhani',
+          'desc': 'Tandoori chicken pulled and cooked in authentic buttery tomato-cream sauce - 20 mins',
+          'price': 380.0,
+          'isVeg': false,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Main Course',
+          'name': 'Awadhi Lamb Korma',
+          'desc': 'Tender lamb braised slowly in caramelized onion and cashew-nut gravy - 30 mins',
+          'price': 420.0,
+          'isVeg': false,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Main Course',
+          'name': 'Coastal Fish Curry',
+          'desc': 'Sea bass cooked in spiced coconut milk, sour tamarind, and curry leaves - 25 mins',
+          'price': 390.0,
+          'isVeg': false,
+          'isSpicy': true,
+        },
+
+        // Breads & Rice
+        {
+          'cat': 'Breads & Rice',
+          'name': 'Butter Naan',
+          'desc': 'Soft clay-oven leavened flatbread brushed with organic butter',
+          'price': 70.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Breads & Rice',
+          'name': 'Garlic Naan',
+          'desc': 'Leavened clay-oven flatbread topped with fresh minced garlic and herbs',
+          'price': 90.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Breads & Rice',
+          'name': 'Subz Dum Biryani',
+          'desc': 'Fragrant long-grain basmati rice layered with garden vegetables, saffron, and mint - 20 mins',
+          'price': 260.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Breads & Rice',
+          'name': 'Awadhi Chicken Biryani',
+          'desc': 'Aromatic basmati rice cooked in dum style with chicken, saffron, and rose water - 20 mins',
+          'price': 340.0,
+          'isVeg': false,
+          'isSpicy': true,
+        },
+        {
+          'cat': 'Breads & Rice',
+          'name': 'Steamed Basmati Rice',
+          'desc': 'Steamed aromatic long-grain premium basmati rice',
+          'price': 120.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+
+        // Desserts
+        {
+          'cat': 'Desserts',
+          'name': 'Saffron Rasmalai',
+          'desc': 'Delicate cottage cheese discs soaked in saffron sweet thickened milk',
+          'price': 160.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Desserts',
+          'name': 'Shahi Tukda',
+          'desc': 'Golden crisp bread pudding topped with thick condensed milk (rabri) and dry fruits',
+          'price': 140.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Desserts',
+          'name': 'Warm Gajar Halwa',
+          'desc': 'Grated red carrots slow-cooked with whole milk, ghee, and cashew nuts',
+          'price': 150.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Desserts',
+          'name': 'Choco Lava Decadence',
+          'desc': 'Rich warm chocolate fudge cake with liquid cocoa center, served with vanilla scoop',
+          'price': 180.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+
+        // Craft Mocktails
+        {
+          'cat': 'Craft Mocktails',
+          'name': 'Mint & Lime Mojito',
+          'desc': 'Crushed mint leaves, fresh lime wedges, sparkling club soda, and simple syrup',
+          'price': 130.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Craft Mocktails',
+          'name': 'Spiced Mango Cooler',
+          'desc': 'Ripe mango puree blended with roasted cumin, rock salt, and mint-chilli infusion',
+          'price': 140.0,
+          'isVeg': true,
+          'isSpicy': true,
+        },
+        {
+          'cat': 'Craft Mocktails',
+          'name': 'Pomegranate Ginger Spritz',
+          'desc': 'Fresh pomegranate juice mixed with raw ginger juice, honey, and sparkling tonic',
+          'price': 150.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+
+        // Hot Beverages
+        {
+          'cat': 'Hot Beverages',
+          'name': 'Signature Masala Chai',
+          'desc': 'Traditional tea brewed with fresh milk, crushed ginger, cardamom, and spices',
+          'price': 60.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Hot Beverages',
+          'name': 'Artisanal Filter Coffee',
+          'desc': 'Frothy, double-drip chicory coffee brewed authentic South Indian style',
+          'price': 70.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
+        {
+          'cat': 'Hot Beverages',
+          'name': 'Assam Green Tea',
+          'desc': 'Hot organic loose-leaf green tea brewed with fresh lemon juice and organic honey',
+          'price': 80.0,
+          'isVeg': true,
+          'isSpicy': false,
+        },
       ];
 
-      final mains = [
-        MenuItemModel(
+      int displayOrderIdx = 1;
+      for (final raw in rawItems) {
+        final item = MenuItemModel(
           id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Butter Chicken',
-          description: 'Tender chicken in creamy tomato sauce - 30 mins',
-          price: 320,
+          categoryId: catId(raw['cat'] as String),
+          name: raw['name'] as String,
+          description: raw['desc'] as String,
+          price: raw['price'] as double,
           isAvailable: true,
-          isVegetarian: false,
-          isSpicy: false,
-          displayOrder: 1,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          isVegetarian: raw['isVeg'] as bool,
+          isSpicy: raw['isSpicy'] as bool,
+          displayOrder: displayOrderIdx++,
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Chicken Tikka Masala',
-          description: 'Grilled chicken in creamy sauce - 25 mins',
-          price: 300,
-          isAvailable: true,
-          isVegetarian: false,
-          isSpicy: false,
-          displayOrder: 2,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Chicken Biryani',
-          description: 'Fragrant basmati rice with chicken - 25 mins',
-          price: 280,
-          isAvailable: true,
-          isVegetarian: false,
-          isSpicy: true,
-          displayOrder: 3,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Paneer Tikka Masala',
-          description: 'Cheese in spiced creamy tomato gravy - 20 mins',
-          price: 280,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 4,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Vegetable Biryani',
-          description: 'Rice with mixed vegetables - 20 mins',
-          price: 200,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: true,
-          displayOrder: 5,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Chole Bhature',
-          description: 'Chickpeas curry with fried bread - 15 mins',
-          price: 150,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: true,
-          displayOrder: 6,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Dal Makhani',
-          description: 'Creamy lentils with spices - 30 mins',
-          price: 220,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 7,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Palak Paneer',
-          description: 'Cheese in spinach gravy - 20 mins',
-          price: 240,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 8,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Lamb Curry',
-          description: 'Tender lamb in aromatic curry - 35 mins',
-          price: 380,
-          isAvailable: true,
-          isVegetarian: false,
-          isSpicy: true,
-          displayOrder: 9,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: mainId,
-          name: 'Fried Rice',
-          description: 'Jasmine rice with vegetables and egg - 15 mins',
-          price: 180,
-          isAvailable: true,
-          isVegetarian: false,
-          isSpicy: false,
-          displayOrder: 10,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-      ];
-
-      final drinks = [
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: drinksId,
-          name: 'Mango Lassi',
-          description: 'Yogurt-based mango drink',
-          price: 100,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 1,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: drinksId,
-          name: 'Sweet Lassi',
-          description: 'Traditional yogurt drink with sugar',
-          price: 80,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 2,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: drinksId,
-          name: 'Fresh Mango Juice',
-          description: 'Freshly squeezed mango juice',
-          price: 100,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 3,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: drinksId,
-          name: 'Iced Tea',
-          description: 'Refreshing iced tea with lemon',
-          price: 60,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 4,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: drinksId,
-          name: 'Coca Cola',
-          description: 'Soft drink',
-          price: 50,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 5,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: drinksId,
-          name: 'Sprite',
-          description: 'Lemon-lime soft drink',
-          price: 50,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 6,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-      ];
-
-      final desserts = [
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: dessertsId,
-          name: 'Gulab Jamun',
-          description: 'Sweet milk solids in sugar syrup',
-          price: 120,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 1,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: dessertsId,
-          name: 'Kheer',
-          description: 'Rice pudding with milk and nuts',
-          price: 100,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 2,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: dessertsId,
-          name: 'Ras Malai',
-          description: 'Cheese dumplings in sweet cream',
-          price: 150,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 3,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-        MenuItemModel(
-          id: const Uuid().v4(),
-          categoryId: dessertsId,
-          name: 'Ice Cream',
-          description: 'Vanilla ice cream',
-          price: 80,
-          isAvailable: true,
-          isVegetarian: true,
-          isSpicy: false,
-          displayOrder: 4,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          syncStatus: AppConstants.syncStatusPending,
-        ),
-      ];
-
-      for (final item in [...starters, ...mains, ...drinks, ...desserts]) {
+        );
         await menuRepository.createMenuItem(item);
       }
 
-      // Create modifiers
-      final modifiers = [
+      // 3. Create premium modifiers
+      final modifiersList = [
         ModifierModel(
           id: const Uuid().v4(),
           name: 'Extra Cheese',
           type: 'extra',
-          price: 30,
+          price: 30.0,
           isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
         ),
         ModifierModel(
           id: const Uuid().v4(),
           name: 'Less Spicy',
           type: 'spice_level',
-          price: 0,
+          price: 0.0,
           isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
         ),
         ModifierModel(
           id: const Uuid().v4(),
           name: 'Extra Spicy',
           type: 'spice_level',
-          price: 0,
+          price: 0.0,
           isActive: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: now,
+          updatedAt: now,
           syncStatus: AppConstants.syncStatusPending,
         ),
       ];
 
-      for (final mod in modifiers) {
+      for (final mod in modifiersList) {
         await menuRepository.createModifier(mod);
       }
 
-      await loadMenu();
+      // Reload the fresh menu state
+      final menu = await menuRepository.getCompleteMenu();
+      final List<MenuCategoryModel> loadedCategories = menu['categories'] ?? [];
+      categories.value = loadedCategories.where((c) => c.name.trim().isNotEmpty).toList();
+      completeMenu.value = menu;
+      
+      await loadAllMenuItems();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create default menu: $e');
+      Get.snackbar('Error', 'Failed to create premium menu database: $e');
     }
   }
 

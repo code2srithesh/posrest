@@ -33,6 +33,7 @@ class OrderScreen extends StatelessWidget {
     final orderController = Get.put(OrderController());
     final menuScrollController = ScrollController();
     final orderScrollController = ScrollController();
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
     // Get arguments from navigation
     final arguments = Get.arguments ?? {};
@@ -55,6 +56,8 @@ class OrderScreen extends StatelessWidget {
     });
 
     return Scaffold(
+      key: scaffoldKey,
+      drawer: _buildCategoryDrawer(context, menuController, orderController),
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Column(
@@ -103,14 +106,27 @@ class OrderScreen extends StatelessWidget {
           },
         ),
         actions: [
+          IconButton(
+            icon: Obx(() => Icon(
+              orderController.isGridView.value ? Icons.view_list : Icons.grid_view,
+              color: Colors.white,
+            )),
+            tooltip: 'Toggle Layout',
+            onPressed: () => orderController.isGridView.toggle(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            tooltip: 'Filter Categories',
+            onPressed: () => scaffoldKey.currentState?.openDrawer(),
+          ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: Obx(
               () => Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 10,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.glassOverlayPurpleMed,
@@ -120,7 +136,7 @@ class OrderScreen extends StatelessWidget {
                   child: Text(
                     '${orderController.getItemCount()} items',
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -206,38 +222,80 @@ class OrderScreen extends StatelessWidget {
                                   child: Scrollbar(
                                     controller: menuScrollController,
                                     thumbVisibility: true,
-                                    child: GridView.builder(
-                                      controller: menuScrollController,
-                                      physics: const BouncingScrollPhysics(),
-                                      padding: const EdgeInsets.all(12),
-                                      gridDelegate:
-                                          SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: menuGridCount,
-                                            mainAxisSpacing: 12,
-                                            crossAxisSpacing: 12,
-                                            childAspectRatio: 0.77,
-                                          ),
-                                      itemCount:
-                                          menuController.filteredMenuItems.length,
-                                      itemBuilder: (context, index) {
-                                        final item =
-                                            menuController.filteredMenuItems[index];
-                                        return SlideInWidget(
-                                          begin: Offset(
-                                            index.isEven ? -0.2 : 0.2,
-                                            (index ~/ 2) * 0.1,
-                                          ),
-                                          duration: Duration(
-                                            milliseconds: 350 + (index * 50),
-                                          ),
-                                          child: _buildMenuItemCard(
-                                            item,
-                                            orderController,
-                                            context,
+                                    child: Obx(() {
+                                      if (menuController.filteredMenuItems.isEmpty) {
+                                        return const Center(
+                                          child: Text(
+                                            'No items match selected filters.',
+                                            style: TextStyle(
+                                              color: AppTheme.textSecondary,
+                                              fontSize: 16,
+                                            ),
                                           ),
                                         );
-                                      },
-                                    ),
+                                      }
+
+                                      if (orderController.isGridView.value) {
+                                        return GridView.builder(
+                                          controller: menuScrollController,
+                                          physics: const BouncingScrollPhysics(),
+                                          padding: const EdgeInsets.all(12),
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: menuGridCount,
+                                                mainAxisSpacing: 12,
+                                                crossAxisSpacing: 12,
+                                                childAspectRatio: 0.77,
+                                              ),
+                                          itemCount:
+                                              menuController.filteredMenuItems.length,
+                                          itemBuilder: (context, index) {
+                                            final item =
+                                                menuController.filteredMenuItems[index];
+                                            return SlideInWidget(
+                                              begin: Offset(
+                                                index.isEven ? -0.2 : 0.2,
+                                                (index ~/ 2) * 0.1,
+                                              ),
+                                              duration: Duration(
+                                                milliseconds: 350 + (index * 50),
+                                              ),
+                                              child: _buildMenuItemCard(
+                                                item,
+                                                orderController,
+                                                context,
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      } else {
+                                        return ListView.builder(
+                                          controller: menuScrollController,
+                                          physics: const BouncingScrollPhysics(),
+                                          padding: const EdgeInsets.all(12),
+                                          itemCount:
+                                              menuController.filteredMenuItems.length,
+                                          itemBuilder: (context, index) {
+                                            final item =
+                                                menuController.filteredMenuItems[index];
+                                            return SlideInWidget(
+                                              begin: Offset(
+                                                0.0,
+                                                index * 0.05,
+                                              ),
+                                              duration: Duration(
+                                                milliseconds: 350 + (index * 50),
+                                              ),
+                                              child: _buildCompactMenuItemRow(
+                                                item,
+                                                orderController,
+                                                context,
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    }),
                                   ),
                                 ),
                               ),
@@ -1118,41 +1176,462 @@ class OrderScreen extends StatelessWidget {
   }
 
   IconData _getCategoryIcon(String categoryName) {
-    switch (categoryName.toLowerCase()) {
-      case 'starters':
-        return Icons.breakfast_dining;
-      case 'main course':
-        return Icons.restaurant;
-      case 'drinks':
-        return Icons.local_drink;
-      case 'desserts':
-        return Icons.cake;
-      default:
-        return Icons.restaurant_menu;
+    final name = categoryName.toLowerCase();
+    if (name.contains('starter') || name.contains('appetizer')) {
+      return Icons.breakfast_dining;
+    } else if (name.contains('main')) {
+      return Icons.restaurant;
+    } else if (name.contains('bread') || name.contains('rice')) {
+      return Icons.rice_bowl;
+    } else if (name.contains('dessert')) {
+      return Icons.cake;
+    } else if (name.contains('mocktail') || name.contains('drink')) {
+      return Icons.local_bar;
+    } else if (name.contains('beverage') || name.contains('tea') || name.contains('coffee')) {
+      return Icons.coffee;
     }
+    return Icons.restaurant_menu;
   }
 
   IconData _getItemIcon(String itemName) {
     final name = itemName.toLowerCase();
-    if (name.contains('chicken') || name.contains('tandoori')) {
+    if (name.contains('chicken') || name.contains('wings') || name.contains('korma') || name.contains('makhani')) {
       return Icons.emoji_food_beverage;
     } else if (name.contains('biryani') || name.contains('rice')) {
       return Icons.rice_bowl;
-    } else if (name.contains('paneer') || name.contains('panir')) {
+    } else if (name.contains('paneer') || name.contains('panir') || name.contains('chaap') || name.contains('mushroom')) {
       return Icons.breakfast_dining;
-    } else if (name.contains('lassi') ||
-        name.contains('juice') ||
-        name.contains('coffee')) {
-      return Icons.local_drink;
-    } else if (name.contains('gulab') ||
-        name.contains('kheer') ||
-        name.contains('dessert')) {
+    } else if (name.contains('lassi') || name.contains('mojito') || name.contains('cooler') || name.contains('spritz') || name.contains('juice')) {
+      return Icons.local_bar;
+    } else if (name.contains('chai') || name.contains('tea') || name.contains('coffee')) {
+      return Icons.coffee;
+    } else if (name.contains('rasmalai') || name.contains('tukda') || name.contains('halwa') || name.contains('cake') || name.contains('dessert') || name.contains('chocolate')) {
       return Icons.cake;
-    } else if (name.contains('naan') || name.contains('bread')) {
+    } else if (name.contains('naan') || name.contains('bread') || name.contains('roti')) {
       return Icons.bakery_dining;
-    } else if (name.contains('samosa') || name.contains('starter')) {
-      return Icons.breakfast_dining;
     }
     return Icons.restaurant_menu;
+  }
+
+  Widget _buildCategoryDrawer(
+    BuildContext context,
+    menu_ctrl.MenuController menuController,
+    OrderController orderController,
+  ) {
+    return Drawer(
+      backgroundColor: Colors.transparent,
+      child: GlassContainer(
+        backdropColor: AppColors.glassOverlayPurpleDeep.withOpacity(0.92),
+        borderRadius: BorderRadius.zero,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drawer Header
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentTeal.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.restaurant_menu,
+                        color: AppColors.accentTeal,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'POSRest Catalog',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white10, height: 1),
+
+              // Search Box inside Drawer
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search menu dishes...',
+                    hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.04),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.accentTeal),
+                    ),
+                  ),
+                  onChanged: (val) {
+                    menuController.searchMenuItems(val);
+                  },
+                ),
+              ),
+
+              // Vegetarian / Spicy filter chips
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Obx(() {
+                      final active = menuController.filterVegetarian.value;
+                      return ActionChip(
+                        avatar: Icon(
+                          Icons.eco,
+                          color: active ? Colors.black : AppColors.success,
+                          size: 14,
+                        ),
+                        label: Text(
+                          'Veg Only',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: active ? Colors.black : Colors.white70,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        backgroundColor: active ? AppColors.accentTeal : Colors.white.withOpacity(0.04),
+                        onPressed: () {
+                          menuController.toggleVegetarianFilter();
+                        },
+                      );
+                    }),
+                    const SizedBox(width: 8),
+                    Obx(() {
+                      final active = menuController.filterSpicy.value;
+                      return ActionChip(
+                        avatar: Icon(
+                          Icons.local_fire_department,
+                          color: active ? Colors.black : Colors.red,
+                          size: 14,
+                        ),
+                        label: Text(
+                          'Spicy Only',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: active ? Colors.black : Colors.white70,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        backgroundColor: active ? AppColors.accentTeal : Colors.white.withOpacity(0.04),
+                        onPressed: () {
+                          menuController.toggleSpicyFilter();
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Divider(color: Colors.white10, height: 1),
+
+              // Categories List Header
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'CATEGORIES',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white54,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+
+              // Category Items List
+              Expanded(
+                child: Obx(() {
+                  final list = menuController.categories;
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    itemCount: list.length + 1, // +1 for "All Items"
+                    itemBuilder: (context, idx) {
+                      if (idx == 0) {
+                        // "All Items" option
+                        final isSelected = menuController.selectedCategoryId.value.isEmpty;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.accentTeal.withOpacity(0.12) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.restaurant_menu,
+                              color: isSelected ? AppColors.accentTeal : Colors.white70,
+                              size: 18,
+                            ),
+                            title: Text(
+                              'All Menu Catalog',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isSelected ? AppColors.accentTeal : Colors.white,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                            dense: true,
+                            onTap: () {
+                              menuController.selectedCategoryId.value = '';
+                              menuController.loadAllMenuItems();
+                              Navigator.pop(context); // Close Drawer
+                            },
+                          ),
+                        );
+                      }
+
+                      final cat = list[idx - 1];
+                      final isSelected = menuController.selectedCategoryId.value == cat.id;
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.accentTeal.withOpacity(0.12) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListTile(
+                          leading: Icon(
+                            _getCategoryIcon(cat.name),
+                            color: isSelected ? AppColors.accentTeal : Colors.white70,
+                            size: 18,
+                          ),
+                          title: Text(
+                            cat.name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: isSelected ? AppColors.accentTeal : Colors.white,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                          dense: true,
+                          onTap: () {
+                            menuController.loadItemsByCategory(cat.id);
+                            Navigator.pop(context); // Close Drawer
+                          },
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+
+              // Footer
+              const Divider(color: Colors.white10, height: 1),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline, color: Colors.white54, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Serving: Waiter Console',
+                      style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.6)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactMenuItemRow(
+    dynamic item,
+    OrderController orderController,
+    BuildContext context,
+  ) {
+    return Obx(() {
+      final existingIndex = orderController.currentOrderItems.indexWhere(
+        (i) => i.menuItemId == item.id,
+      );
+      final hasSelected = existingIndex >= 0;
+      final quantity = hasSelected ? orderController.currentOrderItems[existingIndex].quantity : 0;
+
+      final cardBorderColor = hasSelected ? AppColors.accentTeal : Colors.white.withOpacity(0.08);
+      final cardBorderWidth = hasSelected ? 1.5 : 1.0;
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: GlassContainer(
+          backdropColor: hasSelected ? AppColors.glassOverlayTealDeep : AppColors.glassOverlayTealMed,
+          shadows: hasSelected ? AppAnimations.shadowGlowTeal : AppAnimations.shadowSmall,
+          interactive: true,
+          borderRadius: AppAnimations.radiusLarge,
+          child: GestureDetector(
+            onTap: () => _showItemDetailsDialog(item, orderController, context),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: AppAnimations.radiusLarge,
+                border: Border.all(color: cardBorderColor, width: cardBorderWidth),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Line 1: Veg icon + Name + Spicy icon + Price on right
+                  Row(
+                    children: [
+                      if (item.isVegetarian)
+                        const Icon(Icons.eco, color: AppColors.success, size: 16)
+                      else
+                        const Icon(Icons.restaurant, color: Colors.redAccent, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                item.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.lightText,
+                                ),
+                              ),
+                            ),
+                            if (item.isSpicy ?? false) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.local_fire_department, color: Colors.red, size: 16),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '₹${item.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accentTeal,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  
+                  // Line 2: Description and preparation time badge
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.description ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.lightTextSecondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.04),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.white.withOpacity(0.04)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.schedule, size: 10, color: Colors.white54),
+                            const SizedBox(width: 4),
+                            Text(
+                              item.description?.contains('mins') ?? false
+                                  ? '${item.description!.split(' - ').last}'
+                                  : '15 mins',
+                              style: const TextStyle(fontSize: 9, color: Colors.white54),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Line 3: Selected Status and Cart indicators
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (hasSelected)
+                        Row(
+                          children: [
+                            const Icon(Icons.check_circle_outline, color: AppColors.success, size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Added to order • Quantity: ${quantity}x',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: const [
+                            Icon(Icons.add_circle_outline, color: AppColors.accentTeal, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              'Tap to add to order',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.accentTeal,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (hasSelected)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '₹${(item.price * quantity).toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 }

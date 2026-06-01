@@ -265,6 +265,14 @@ class DatabaseHelper {
     await db.delete('sync_queue');
   }
 
+  // Clear menu-related data only
+  Future<void> clearMenuOnly() async {
+    final db = await database;
+    await db.delete('menu_items');
+    await db.delete('menu_categories');
+    await db.delete('modifiers');
+  }
+
   // ==================== USER OPERATIONS ====================
   Future<int> insertUser(UserModel user) async {
     final db = await database;

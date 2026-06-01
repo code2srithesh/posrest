@@ -81,4 +81,8 @@ class MenuRepository {
   Future<List<MenuItemModel>> getAllMenuItems() {
     return _dbHelper.getAllMenuItems();
   }
+
+  Future<void> clearMenuOnly() async {
+    await _dbHelper.clearMenuOnly();
+  }
 }

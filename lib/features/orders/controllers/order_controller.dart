@@ -18,6 +18,7 @@ class OrderController extends GetxController {
   final currentOrder = Rxn<OrderModel>();
   final currentOrderItems = <OrderItemModel>[].obs;
   final isLoading = false.obs;
+  final isGridView = true.obs;
 
   void _showSnackbar(String title, String message, {bool isError = false}) {
     if (Get.testMode) return;
