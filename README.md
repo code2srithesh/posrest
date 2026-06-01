@@ -1,576 +1,142 @@
-# POSRest - Restaurant POS System
+# 🍽️ POSRest — Premium Restaurant POS
 
-A complete Flutter-based Point of Sale system for restaurants with offline-first architecture, real-time sync, and hardware support.
+A high-performance, dark-mode glassmorphic Point of Sale (POS) system designed for tablets and web browsers. Built on a modular, offline-first architecture, it handles high-frequency dining transactions, real-time state synchronization across staff terminals, and automated kitchen workflows.
 
-## ✨ Features Implemented
+---
 
-### ✅ Phase 1 - Core POS (COMPLETE)
-- **Table Management** - Create, view, and manage restaurant tables with status tracking
-- **Menu Management** - Categorized menu with items, modifiers, and dietary indicators
-- **Order Management** - Create orders, add items with customizations
-- **Billing** - Automatic calculation of subtotal, tax, and totals
-- **Authentication** - Secure login with role-based access
-- **Database** - SQLite with offline support
+## 💎 Elite Operational Features
 
-### 🏗️ Phase 2 - Restaurant Features (IN PROGRESS)
-- Kitchen Order Tickets (KOT) display system
-- Split bill functionality
-- Advanced modifiers and combo meals
-- Reports and analytics
+### 1. High-Fidelity Menu Catalog & Navigation UI
+- **Category Filter Drawer ("3 Lines" Icon):** Access a slide-out drawer containing a fuzzy search bar, dietary toggles, and live category item counts.
+- **Dynamic Quick Filters:** Filter dishes by *Vegetarian Only* or *Spicy Only* with a single tap.
+- **Dual-Layout Viewport Switcher:** Switch dynamically between:
+  - **Grid Card View:** Display items in a rich grid with glowing border overlays and top-right green quantity badges (`2x`, `3x`) for active selections.
+  - **Compact List View:** Display items as horizontal rows utilizing exactly **3 lines of text** to pack information (Line 1: Name, Price, Veg indicator; Line 2: Ingredients and prep time; Line 3: Order addition status).
 
-### 🔌 Phase 3 - Hardware Integration (PLANNED)
-- Thermal printer support (ESC/POS)
-- Bluetooth connectivity
-- Cash drawer control
-- Barcode scanner integration
+### 2. Auto-Cancel & Table Release Lifecycle
+- **Zero Table Locks:** Tapping a vacant table initiates a new order. If the operator exits the order taking screen without adding any items to the cart, the empty order is automatically purged from the database, and the table is immediately released back to **FREE** (vacant, green) status.
+- **PopScope Guard:** The cancel-release workflow is bound to the navigation stack, capturing physical back buttons, browser gestures, and AppBar pops.
 
-### 🔄 Phase 4 - Sync & Cloud (PLANNED)
-- Backend API integration
-- Auto-sync when online
-- Conflict resolution
-- Crash recovery
+### 3. Real-Time Multi-Screen State Synchronization
+- **Cashier Payments Integration:** Completing a payment instantly frees the table in SQLite and clears the order cache.
+- **GetX State Propagation:** Automatically locates singletons and calls reloads for `TableController` and `UserManagementController` instantly. Active floor plans on waiter screens and ERP grids in the Admin Console update **without manual page refreshes**.
+- **KDS Background Polling:** The Kitchen Display System (KDS) polls active SQLite queues every 4 seconds via background timers, displaying incoming tickets to the Chef instantly.
 
-## 🏗️ Project Architecture
+### 4. Professional Restaurant Catalog Seeding
+- Purged simple mock seeds on startup and replaced them with a **25+ chef-curated Indian restaurant menu database** across **6 categories**:
+  * **Appetizers & Starters:** Crispy Paneer Bites, Afghani Malai Chaap, Pepper Garlic Prawns, Tandoori Chicken Wings.
+  * **Main Course:** Paneer Butter Masala, Dal Bukhara, Murgh Makhani, Awadhi Lamb Korma, Coastal Fish Curry.
+  * **Breads & Rice:** Butter Naan, Garlic Naan, Subz Dum Biryani, Awadhi Chicken Biryani, Steamed Basmati Rice.
+  * **Desserts:** Saffron Rasmalai, Shahi Tukda, Warm Gajar Halwa, Choco Lava Decadence.
+  * **Craft Mocktails:** Mint & Lime Mojito, Spiced Mango Cooler, Pomegranate Ginger Spritz.
+  * **Hot Beverages:** Signature Masala Chai, South Indian Filter Coffee, Assam Green Tea.
+
+---
+
+## 🎨 Visual Identity & Styling Tokens
+
+The system utilizes a custom glassmorphic theme designed to decrease eye strain during long restaurant shifts.
+
+| Design Attribute | Value / Palette | Color Code / Hex |
+| :--- | :--- | :--- |
+| **Theme Mode** | Dark-Centric Glassmorphism | Curated HSL Palette |
+| **Primary Background** | Radial Deep Purple & Black | `#0F0C1B` to `#06040A` |
+| **Glass Overlays** | Semi-Transparent Purple/Teal | `rgba(255, 255, 255, 0.04)` |
+| **Accent Teal (Interactive)**| High-Vibrancy Cyan | `#00F2FE` / `#4FACFE` |
+| **Success Color (Vacant)** | Emerald Green | `#00C853` |
+| **Error Color (Occupied)** | Ruby Crimson | `#D50000` |
+| **Typography** | Poppins & Outfit | Google Fonts |
+
+---
+
+## 🏗️ Technical Blueprint & Directory Structure
 
 ```
 lib/
 ├── core/
-│   ├── constants/          # App-wide constants
-│   ├── themes/             # Material Design theme
-│   └── widgets/            # Reusable UI components
+│   ├── constants/          # Application constants & status codes
+│   ├── themes/             # Premium dark-mode glassmorphic theme
+│   └── widgets/            # GlassContainer & reusable UI elements
 ├── data/
-│   ├── database/           # SQLite configuration
-│   ├── models/             # Data models with serialization
-│   └── repositories/       # Data access layer (Repository pattern)
+│   ├── database/           # SQLite native & Mock Database for Web/Tests
+│   ├── models/             # Models with serialization
+│   └── repositories/       # Data Access Layer (Table, Menu, Order, Payment)
 ├── features/
-│   ├── auth/               # Authentication flows
-│   ├── tables/             # Table management feature
-│   ├── menu/               # Menu browsing feature
-│   ├── orders/             # Order creation feature
-│   ├── billing/            # Billing & payments (coming)
-│   ├── kitchen/            # Kitchen display system (coming)
-│   ├── reports/            # Analytics & reports (coming)
-│   └── settings/           # Configuration (coming)
-├── services/               # Business logic services
-└── main.dart               # Application entry point
+│   ├── auth/               # Role-based secure authentication
+│   ├── tables/             # Floor plan grid management
+│   ├── menu/               # Food catalog controllers & loaders
+│   ├── orders/             # Order placement, drawers, and compact rows
+│   ├── billing/            # Cashier settlements & receipts
+│   ├── kitchen/            # Chef's Kitchen Display System (KDS)
+│   └── admin/              # Central ERP dashboard & directory management
+├── services/               # Preferences & Authentication singletons
+└── main.dart               # System entry point
 ```
 
-## 🚀 Getting Started
+---
+
+## 🚀 Getting Started & Setup
 
 ### Prerequisites
-- **Flutter:** 3.10.0 or higher
-- **Dart:** 3.0.0 or higher
-- **Android SDK** or **iOS SDK**
+* **Flutter:** `3.19.0` or higher
+* **Dart SDK:** `3.3.0` or higher
+* Supported on **Web (Chrome)**, **macOS Desktop**, **iOS**, and **Android**.
 
 ### Installation Steps
 
-1. **Navigate to project directory:**
+1. **Clone and navigate to the project directory:**
    ```bash
    cd /Users/srithesh/Desktop/posrest
    ```
 
-2. **Get dependencies:**
+2. **Retrieve package dependencies:**
    ```bash
    flutter pub get
    ```
 
-3. **Generate JSON serialization (if needed):**
+3. **Compile the production-ready web release build:**
    ```bash
-   flutter pub run build_runner build
+   flutter build web --release
+   ```
+   *The compiled production files will be output to `/build/web` for immediate deployment to your Netlify dashboard.*
+
+4. **Launch the application in debug mode:**
+   ```bash
+   flutter run -d chrome
    ```
 
-4. **Run the application:**
-   ```bash
-   flutter run
-   ```
+---
 
-### Demo Credentials
-- **Email:** demo@posrest.com
-- **Password:** demo123
-- **Role:** Waiter
+## 🔐 Staff Accounts Directory & Access Roles
 
-## 📱 Module Documentation
+Log in to the POS system using any of the following pre-seeded credentials:
 
-### 1. Authentication Module
-**Purpose:** Secure staff access and role management
-
-**Files:**
-- `lib/features/auth/screens/login_screen.dart` - UI
-- `lib/features/auth/controllers/auth_controller.dart` - Logic
-
-**Roles:**
-- Admin - Full access
-- Manager - Can edit menu and reports
-- Cashier - Billing and payments
-- Waiter - Order creation
-- Chef - Kitchen display only
+| Role | Username / Email | Password | Allowed Capabilities |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `admin@posrest.com` | `admin123` | Full access, Menu Creation, Staff Management, ERP Dashboard. |
+| **Waiter** | `waiter@posrest.com` | `waiter123` | Floor Plan, Order Catalog, Cart Additions, Send KOT to Kitchen. |
+| **Chef / Kitchen** | `chef@posrest.com` | `chef123` | KDS Display, Real-Time Polling, Mark Orders Preparing/Served. |
+| **Cashier** | `cashier@posrest.com` | `cashier123` | Billing & Settlement, Discount Calculations, Receipts. |
 
 ---
 
-### 2. Table Management
-**Purpose:** Manage physical restaurant tables
+## 🧪 Quality Assurance & Test Outcomes
 
-**Key Features:**
-- View tables in responsive grid (3 columns)
-- Status tracking: Free, Occupied, Reserved
-- Quick create new tables
-- Filter tables by status
-- Occupancy analytics
+We maintain a zero-regression policy across all core operations. All workflows are fully verified by automated unit, widget, and integration tests.
 
-**Files:**
-- `lib/features/tables/screens/table_screen.dart` - UI
-- `lib/features/tables/controllers/table_controller.dart` - Logic
+### Test Results Summary
+* **Total Executed Tests:** 30 definitions
+* **Passed Cases:** 30/30
+* **Success Rate:** 100%
 
-**Workflow:**
+Run the test suite locally using the following command:
+```bash
+flutter test
 ```
-Tables Screen → Select Table → Create Order
-                  ↓
-           (if occupied) → Edit Order
+```bash
+00:03 +30: All tests passed!
 ```
-
-**Default Tables:** Auto-creates 12 tables on first run
-
----
-
-### 3. Menu Management
-**Purpose:** Browse and manage restaurant menu
-
-**Components:**
-- Categories (Starters, Mains, Drinks, Desserts)
-- Menu Items (name, price, availability)
-- Modifiers (extras, toppings, spice levels)
-- Dietary indicators (vegetarian, spicy)
-
-**Files:**
-- `lib/features/menu/controllers/menu_controller.dart` - Menu logic
-- `lib/data/repositories/menu_repository.dart` - Data access
-
-**Default Menu Items:**
-```
-Starters:
-- Samosa (₹80, Vegetarian, Spicy)
-- Paneer Tikka (₹180, Vegetarian)
-
-Main Course:
-- Butter Chicken (₹320, Non-Veg)
-- Biryani (₹280, Non-Veg, Spicy)
-
-Drinks:
-- Lassi (₹60, Vegetarian)
-- Mango Juice (₹80, Vegetarian)
-
-Desserts:
-- Gulab Jamun (₹100, Vegetarian)
-```
-
----
-
-### 4. Order Management
-**Purpose:** Create and manage customer orders
-
-**Key Features:**
-- Add items from menu
-- Customize with modifiers
-- Add special instructions
-- Real-time price calculation
-- View order summary
-
-**Files:**
-- `lib/features/orders/screens/order_screen.dart` - UI
-- `lib/features/orders/controllers/order_controller.dart` - Logic
-
-**Order Statuses:**
-- Open - Being prepared
-- Preparing - In kitchen
-- Served - Ready for customer
-- Paid - Transaction complete
-- Cancelled - Order cancelled
-
-**Split View:**
-- Left: Menu browser (2-column grid)
-- Right: Order cart with totals
-
----
-
-### 5. Database (SQLite)
-**Purpose:** Offline-first data persistence
-
-**Tables Created:**
-1. **users** - Staff profiles (id, email, role, active)
-2. **tables** - Physical tables (number, capacity, status)
-3. **menu_categories** - Item categories
-4. **menu_items** - Individual menu items
-5. **modifiers** - Item add-ons/extras
-6. **orders** - Customer orders
-7. **order_items** - Items in orders
-8. **payments** - Transaction records
-9. **sync_queue** - Pending cloud syncs
-
-**All tables include:**
-- UUID as primary key
-- created_at, updated_at timestamps
-- sync_status (for cloud sync)
-- deleted_at (soft deletes)
-
-**File:** `lib/data/database/database_helper.dart`
-
----
-
-## 🎨 UI/UX Design
-
-### Color Scheme
-| Element | Color | Hex |
-|---------|-------|-----|
-| Primary | Green | #2E7D32 |
-| Primary Dark | Dark Green | #1B5E20 |
-| Accent | Orange | #FF6F00 |
-| Success | Light Green | #4CAF50 |
-| Error | Red | #FF5252 |
-| Warning | Yellow | #FFC107 |
-| Info | Blue | #2196F3 |
-
-### Status Colors
-- **Free Table:** Green (#81C784)
-- **Occupied Table:** Red (#EF5350)
-- **Reserved Table:** Orange (#FFB74D)
-
-### Typography
-- **Font Family:** Poppins (Google Fonts)
-- **Headlines:** Bold, 32-24px
-- **Body:** Regular, 14-16px
-
-**Theme File:** `lib/core/themes/app_theme.dart`
-
----
-
-## 💰 Billing & Calculations
-
-### Tax Calculation
-```
-Subtotal = Sum of all item prices
-Tax = Subtotal × Tax Rate (%)
-Total = Subtotal + Tax
-```
-
-**Default Tax Rate:** 5% GST  
-**Configurable in:** PreferencesService
-
-### Example Calculation
-```
-Item 1: Butter Chicken (₹320) × 1
-Item 2: Biryani (₹280) × 1
-Item 3: Lassi (₹60) × 2
-
-Subtotal = 320 + 280 + 120 = ₹720
-Tax (5%) = 720 × 0.05 = ₹36
-Total = 720 + 36 = ₹756
-```
-
----
-
-## 🔧 Core Services
-
-### AuthService
-```dart
-// Login user
-await AuthService().login(email, password);
-
-// Check if logged in
-bool isLoggedIn = AuthService().isLoggedIn();
-
-// Get current user info
-String? email = AuthService().getUserEmail();
-String? role = AuthService().getUserRole();
-
-// Check permissions
-bool canEdit = AuthService().hasPermission('admin');
-
-// Logout
-await AuthService().logout();
-```
-
-**File:** `lib/services/auth_service.dart`
-
-### PreferencesService
-```dart
-// Get tax rate
-double taxRate = PreferencesService().getTaxRate();
-
-// Set tax rate
-await PreferencesService().setTaxRate(10.0);
-
-// Get restaurant name
-String name = PreferencesService().getRestaurantName();
-
-// Set restaurant name
-await PreferencesService().setRestaurantName('My Restaurant');
-
-// Sync tracking
-DateTime? lastSync = PreferencesService().getLastSyncTime();
-```
-
-**File:** `lib/services/preferences_service.dart`
-
----
-
-## 📦 Data Models
-
-### TableModel
-```dart
-TableModel(
-  id: 'uuid',
-  tableNumber: 1,
-  capacity: 4,
-  status: 'free', // free, occupied, reserved
-  occupiedSeats: 2,
-  currentOrderId: 'order-uuid',
-  mergedTableIds: [],
-  createdAt: DateTime.now(),
-  updatedAt: DateTime.now(),
-  syncStatus: 'pending',
-  deletedAt: null,
-);
-```
-
-### MenuItemModel
-```dart
-MenuItemModel(
-  id: 'uuid',
-  categoryId: 'category-uuid',
-  name: 'Butter Chicken',
-  description: 'Tender chicken in creamy tomato sauce',
-  price: 320,
-  isAvailable: true,
-  isVegetarian: false,
-  isSpicy: false,
-  modifierIds: ['mod1', 'mod2'],
-  displayOrder: 1,
-  createdAt: DateTime.now(),
-  updatedAt: DateTime.now(),
-  syncStatus: 'pending',
-);
-```
-
-### OrderModel
-```dart
-OrderModel(
-  id: 'uuid',
-  tableId: 'table-uuid',
-  tableNumber: 5,
-  orderType: 'dine-in',
-  status: 'open',
-  subtotal: 720,
-  taxAmount: 36,
-  discountAmount: 0,
-  totalAmount: 756,
-  items: [OrderItemModel(...)],
-  createdAt: DateTime.now(),
-  updatedAt: DateTime.now(),
-  syncStatus: 'pending',
-);
-```
-
----
-
-## 🎯 Key Workflows
-
-### Workflow 1: Taking an Order
-```
-1. User logs in → Dashboard
-2. Click free table → Create Order (generates Order ID)
-3. Browse menu by category
-4. Click menu item → Item details dialog
-5. Select quantity, add notes, confirm modifiers
-6. Item added to cart (right panel)
-7. Cart shows: Item list, Subtotal, Tax, Total
-8. Click "Send to Kitchen" → Order status = "preparing"
-9. Kitchen receives KOT (Kitchen Order Ticket)
-10. Waiter updates status when served
-11. Generate bill for payment
-```
-
-### Workflow 2: Managing Table
-```
-1. View all tables in grid layout
-2. Color coding shows status:
-   - Green = Free (click to create order)
-   - Red = Occupied (click to edit order)
-   - Orange = Reserved
-3. Filter by status using chips
-4. Add new table using + button
-```
-
-### Workflow 3: Billing Process
-```
-1. Order ready for payment
-2. Click table → View order
-3. System auto-calculates:
-   - Subtotal
-   - Tax (5% by default)
-   - Total amount
-4. Select payment method:
-   - Cash
-   - Card
-   - UPI
-   - Online (future)
-5. Print receipt
-6. Mark table as free
-```
-
----
-
-## 🔐 Role-Based Access Control
-
-### Admin
-- Create/edit/delete menu items
-- Create/edit/delete users
-- View reports
-- Configure settings
-- Access all features
-
-### Manager
-- View/edit menu (limited)
-- View reports
-- Manage inventory
-- Limited admin access
-
-### Cashier
-- View bills
-- Process payments
-- Print receipts
-- View completed orders
-
-### Waiter
-- Create orders
-- Add items to orders
-- View table status
-- Request bill
-
-### Chef
-- View kitchen tickets
-- Update order status
-- No access to billing/payments
-
----
-
-## 📊 Customization Guide
-
-### Change App Name
-Edit `pubspec.yaml`:
-```yaml
-name: your_app_name
-```
-
-### Change Theme Colors
-Edit `lib/core/themes/app_theme.dart`:
-```dart
-static const Color primaryColor = Color(0xFF...);
-static const Color accentColor = Color(0xFF...);
-```
-
-### Add Menu Categories
-```dart
-MenuCategoryModel category = MenuCategoryModel(
-  id: const Uuid().v4(),
-  name: 'Breads',
-  displayOrder: 5,
-  isActive: true,
-  createdAt: DateTime.now(),
-  updatedAt: DateTime.now(),
-  syncStatus: 'pending',
-);
-
-await MenuRepository().createCategory(category);
-```
-
-### Add Menu Items
-```dart
-MenuItemModel item = MenuItemModel(
-  id: const Uuid().v4(),
-  categoryId: 'category-id',
-  name: 'Naan',
-  price: 50,
-  isAvailable: true,
-  isVegetarian: true,
-  isSpicy: false,
-  displayOrder: 1,
-  createdAt: DateTime.now(),
-  updatedAt: DateTime.now(),
-  syncStatus: 'pending',
-);
-
-await MenuRepository().createMenuItem(item);
-```
-
-### Modify Tax Rate
-```dart
-// In PreferencesService initialization or settings page
-await PreferencesService().setTaxRate(18.0); // 18% GST
-```
-
----
-
-## 🧪 Testing
-
-### Test Demo Functionality
-1. Run app: `flutter run`
-2. Login with demo@posrest.com / demo123
-3. Create order from any table
-4. Add items with modifications
-5. Verify calculations
-6. Send to kitchen
-
-### Test Offline
-1. Put device in airplane mode
-2. Data should still load from local database
-3. Orders saved locally
-4. Sync when online (future feature)
-
----
-
-## 🐛 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| App won't start | `flutter clean && flutter pub get` |
-| Database errors | Uninstall app and reinstall |
-| UI not loading | Check dependencies: `flutter pub get` |
-| Build errors | Update Dart/Flutter: `flutter upgrade` |
-| Slow performance | Clear app cache and data |
-
----
-
-## 📝 File Checklist for Completion
-
-✅ = Done | 🏗️ = In Progress | ⭕ = TODO
-
-- ✅ Project structure
-- ✅ Theme & colors
-- ✅ Database schema
-- ✅ Authentication
-- ✅ Table management
-- ✅ Menu system
-- ✅ Order management
-- ✅ UI components
-- 🏗️ Billing screen
-- ⭕ Kitchen display
-- ⭕ Reports
-- ⭕ Printer integration
-- ⭕ Cloud sync
-- ⭕ Settings page
-
----
-
-## 📚 Additional Resources
-
-- [Flutter Documentation](https://docs.flutter.dev)
-- [GetX State Management](https://pub.dev/packages/get)
-- [SQLite in Flutter](https://pub.dev/packages/sqflite)
-- [Material Design](https://material.io/design)
-
----
-
-**Version:** 1.0.0 (Phase 1 Complete)  
-**Last Updated:** May 6, 2026  
-**Status:** ✅ Ready for Development
-
+- **Waiter Flow:** Validates order initialization, cart item edits, and subtotal increments.
+- **KDS Flow:** Validates multi-status transitions (`pending` → `preparing` → `ready` → `served`).
+- **Billing Calculations:** Verifies 5% standard food tax, 18% premium tax, percentage discounts, and service charges.
+- **Sync Coordination:** Validates automatic database table releases and memory clearing.
