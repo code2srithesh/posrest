@@ -228,6 +228,58 @@ class TableScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 12),
+                            // Dining Occupancy Rate Progress Indicator
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.02),
+                                borderRadius: AppAnimations.radiusMedium,
+                                border: Border.all(color: Colors.white.withOpacity(0.04)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: const [
+                                          Icon(Icons.analytics_outlined, size: 14, color: Colors.white70),
+                                          SizedBox(width: 6),
+                                          Text(
+                                            'Dining Occupancy Rate',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white70,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        '${(controller.getTableOccupancyRate() * 100).toStringAsFixed(0)}% Capacity',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.accentTeal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: controller.getTableOccupancyRate(),
+                                      backgroundColor: Colors.white10,
+                                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentTeal),
+                                      minHeight: 6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
