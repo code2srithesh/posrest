@@ -9,6 +9,8 @@ import '../../../core/widgets/admin_bottom_nav_bar.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../services/auth_service.dart';
 import '../controllers/table_controller.dart';
+import '../../../data/models/order_model.dart';
+import '../../../data/repositories/order_repository.dart';
 
 class TableScreen extends StatelessWidget {
   const TableScreen({Key? key}) : super(key: key);
@@ -457,10 +459,7 @@ class TableScreen extends StatelessWidget {
       onTap: () {
         if (table.status == AppConstants.statusOccupied &&
             table.currentOrderId != null) {
-          Get.toNamed(
-            '/order',
-            arguments: {'orderId': table.currentOrderId, 'tableId': table.id, 'tableNumber': table.tableNumber},
-          )?.then((_) => controller.loadTables());
+          _showOccupiedTableHUD(context, controller, table);
         } else if (table.status == AppConstants.statusFree) {
           Get.toNamed(
             '/order/create',
@@ -805,5 +804,434 @@ class TableScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _showOccupiedTableHUD(BuildContext context, TableController controller, dynamic table) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) {
+        return FutureBuilder<OrderModel?>(
+          future: OrderRepository().getOrderById(table.currentOrderId ?? ''),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                height: 250,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F0A26).withOpacity(0.95),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                ),
+                child: const Center(
+                  child: CircularProgressIndicator(color: AppColors.accentTeal),
+                ),
+              );
+            }
+
+            final order = snapshot.data;
+            if (order == null) {
+              return Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F0A26).withOpacity(0.95),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, color: AppColors.error, size: 36),
+                      const SizedBox(height: 12),
+                      const Text('Failed to load active order details', style: TextStyle(color: Colors.white70)),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return _buildOccupiedHUDContent(context, controller, table, order);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildOccupiedHUDContent(
+    BuildContext context,
+    TableController controller,
+    dynamic table,
+    OrderModel order,
+  ) {
+    final steps = ['Placed', 'Accepted', 'Cooking', 'Ready', 'Served', 'Paid'];
+    int activeIndex = 0;
+    switch (order.status) {
+      case 'open':
+        activeIndex = 0;
+        break;
+      case 'sent_to_kitchen':
+        activeIndex = 1;
+        break;
+      case 'preparing':
+        activeIndex = 2;
+        break;
+      case 'ready':
+        activeIndex = 3;
+        break;
+      case 'served':
+      case 'payment_pending':
+        activeIndex = 4;
+        break;
+      case 'paid':
+        activeIndex = 5;
+        break;
+      default:
+        activeIndex = 0;
+    }
+
+    final double itemsSubtotal = order.items.fold(0.0, (sum, item) => sum + item.totalPrice);
+    final double taxAmount = itemsSubtotal * 0.05; // 5% default tax
+    final double totalBill = itemsSubtotal + taxAmount;
+
+    return Container(
+      padding: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F0A26).withOpacity(0.96),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        border: const Border(
+          top: BorderSide(color: Color(0x29FFFFFF), width: 1.5),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Bottom sheet handle
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Title Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.table_restaurant, color: AppColors.error, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Table ${table.tableNumber} - Live Session HUD',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            'Order #${order.id.substring(0, 8).toUpperCase()}',
+                            style: const TextStyle(color: Colors.white54, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.error.withOpacity(0.4)),
+                    ),
+                    child: const Text(
+                      'OCCUPIED',
+                      style: TextStyle(
+                        color: AppColors.error,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Timeline HUD segment
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GlassContainer(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                backdropColor: Colors.white.withOpacity(0.02),
+                borderRadius: BorderRadius.circular(16),
+                child: Row(
+                  children: List.generate(steps.length, (index) {
+                    final stepName = steps[index];
+                    final isCompleted = index < activeIndex;
+                    final isActive = index == activeIndex;
+                    
+                    Color circleColor;
+                    IconData icon;
+                    if (isCompleted) {
+                      circleColor = AppColors.success;
+                      icon = Icons.check;
+                    } else if (isActive) {
+                      circleColor = order.status == 'preparing' ? AppColors.accentOrange : AppColors.accentTeal;
+                      icon = _getStepIcon(index);
+                    } else {
+                      circleColor = Colors.white24;
+                      icon = _getStepIcon(index);
+                    }
+
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 2,
+                                  color: index == 0 ? Colors.transparent : (isCompleted ? AppColors.success : Colors.white10),
+                                ),
+                              ),
+                              isActive
+                                  ? PulseWidget(
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: circleColor.withOpacity(0.2),
+                                          border: Border.all(color: circleColor, width: 2),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: circleColor.withOpacity(0.4),
+                                              blurRadius: 8,
+                                            )
+                                          ],
+                                        ),
+                                        child: Icon(icon, color: Colors.white, size: 14),
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 28,
+                                      height: 28,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isCompleted ? circleColor : Colors.white.withOpacity(0.04),
+                                        border: Border.all(
+                                          color: isCompleted ? circleColor : Colors.white24,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        icon,
+                                        color: isCompleted ? Colors.white : Colors.white38,
+                                        size: 12,
+                                      ),
+                                    ),
+                              Expanded(
+                                child: Container(
+                                  height: 2,
+                                  color: index == steps.length - 1
+                                      ? Colors.transparent
+                                      : (isCompleted || isActive ? (index == activeIndex ? Colors.white10 : AppColors.success) : Colors.white10),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            stepName,
+                            style: TextStyle(
+                              color: isActive
+                                  ? circleColor
+                                  : (isCompleted ? Colors.white70 : Colors.white38),
+                              fontSize: 10,
+                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Items summary card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'ACTIVE CART ITEMS',
+                    style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 180),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.03),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    child: order.items.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No items in cart.',
+                              style: TextStyle(color: Colors.white38, fontSize: 12),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: order.items.length,
+                            itemBuilder: (context, index) {
+                              final item = order.items[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${item.itemName} x ${item.quantity}',
+                                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                    Text(
+                                      '₹${item.totalPrice.toStringAsFixed(0)}',
+                                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Bill aggregates
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Subtotal:', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                        Text('₹${itemsSubtotal.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Tax (5%):', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                        Text('₹${taxAmount.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  const Divider(color: Colors.white10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Total Bill Amount:', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(
+                          '₹${totalBill.toStringAsFixed(2)}',
+                          style: const TextStyle(color: AppColors.accentTeal, fontSize: 16, fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Action Buttons Row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: PrimaryButton(
+                      label: 'View Menu / Add Items',
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Get.toNamed(
+                          '/order',
+                          arguments: {'orderId': order.id, 'tableId': table.id, 'tableNumber': table.tableNumber},
+                        )?.then((_) => controller.loadTables());
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SecondaryButton(
+                      label: 'Settle Payment',
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Get.toNamed('/billing/${order.id}')?.then((_) => controller.loadTables());
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getStepIcon(int index) {
+    switch (index) {
+      case 0: return Icons.note_add_outlined;
+      case 1: return Icons.assignment_turned_in_outlined;
+      case 2: return Icons.soup_kitchen_outlined;
+      case 3: return Icons.room_service_outlined;
+      case 4: return Icons.dining_outlined;
+      case 5: return Icons.payments_outlined;
+      default: return Icons.circle;
+    }
   }
 }
