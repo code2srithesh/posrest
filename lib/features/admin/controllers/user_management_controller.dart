@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
@@ -63,6 +64,8 @@ class UserManagementController extends GetxController {
 
   List<String> get assignableRoles => AuthService.instance.getAssignableRoles();
 
+  Timer? _refreshTimer;
+
   @override
   void onInit() {
     super.onInit();
@@ -72,12 +75,23 @@ class UserManagementController extends GetxController {
 
     // Initial load
     loadDashboardData();
+
+    // Schedule background polling every 3 seconds to keep counters in sync
+    if (!Get.testMode) {
+      _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+        if (!isLoading.value) {
+          loadDashboardData(silent: true);
+        }
+      });
+    }
   }
 
   // Load all central admin panel data
-  Future<void> loadDashboardData() async {
+  Future<void> loadDashboardData({bool silent = false}) async {
     try {
-      isLoading.value = true;
+      if (!silent) {
+        isLoading.value = true;
+      }
       
       // 1. Fetch Users & Group them
       final loadedUsers = await AuthService.instance.getAllUsers();
@@ -116,9 +130,13 @@ class UserManagementController extends GetxController {
         await loadItemsByCategory(selectedMenuCategoryId.value);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load dashboard data: $e');
+      if (!silent) {
+        Get.snackbar('Error', 'Failed to load dashboard data: $e');
+      }
     } finally {
-      isLoading.value = false;
+      if (!silent) {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -329,6 +347,7 @@ class UserManagementController extends GetxController {
 
   @override
   void onClose() {
+    _refreshTimer?.cancel();
     nameController.dispose();
     emailController.dispose();
     passwordController.dispose();

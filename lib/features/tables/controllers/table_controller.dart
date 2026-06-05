@@ -1,27 +1,75 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/table_model.dart';
 import '../../../data/repositories/table_repository.dart';
+import '../../../data/models/order_model.dart';
+import '../../../data/repositories/order_repository.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/themes/app_colors.dart';
 
 class TableController extends GetxController {
   final tableRepository = TableRepository();
+  final orderRepository = OrderRepository();
 
   final tables = <TableModel>[].obs;
+  final openOrders = <String, OrderModel>{}.obs;
   final isLoading = false.obs;
   final selectedTableId = RxnString();
   final filterStatus = ''.obs;
+  
+  Timer? _refreshTimer;
+  final Map<String, String> _previousStatuses = {};
 
   @override
   void onInit() {
     super.onInit();
     loadTables();
+    if (!Get.testMode) {
+      _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+        loadTables(silent: true);
+      });
+    }
   }
 
-  Future<void> loadTables() async {
+  @override
+  void onClose() {
+    _refreshTimer?.cancel();
+    super.onClose();
+  }
+
+  Future<void> loadTables({bool silent = false}) async {
     try {
-      isLoading.value = true;
+      if (!silent) {
+        isLoading.value = true;
+      }
       final allTables = await tableRepository.getAllTables();
+      
+      // Load active open orders
+      final activeOrders = await orderRepository.getOpenOrders();
+      final orderMap = <String, OrderModel>{};
+      
+      for (final order in activeOrders) {
+        orderMap[order.id] = order;
+        
+        // Notify on transition to 'ready'
+        final oldStatus = _previousStatuses[order.id];
+        if (oldStatus != null && oldStatus != 'ready' && order.status == 'ready') {
+          _showOrderReadyNotification(order);
+        }
+        
+        _previousStatuses[order.id] = order.status;
+      }
+      
+      // Populate statuses for orders already in the list on startup, if map is empty
+      if (_previousStatuses.isEmpty && activeOrders.isNotEmpty) {
+        for (final order in activeOrders) {
+          _previousStatuses[order.id] = order.status;
+        }
+      }
+      
+      openOrders.value = orderMap;
 
       if (allTables.isEmpty) {
         // Create default tables if none exist
@@ -30,10 +78,36 @@ class TableController extends GetxController {
         tables.value = allTables;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load tables: $e');
+      if (!silent) {
+        Get.snackbar('Error', 'Failed to load tables: $e');
+      }
     } finally {
-      isLoading.value = false;
+      if (!silent) {
+        isLoading.value = false;
+      }
     }
+  }
+
+  void _showOrderReadyNotification(OrderModel order) {
+    if (Get.testMode) return;
+    try {
+      Get.snackbar(
+        '🛎️ Food Ready!',
+        'Table ${order.tableNumber}: Order is ready for pickup!',
+        backgroundColor: AppColors.success,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 4),
+        icon: const Icon(Icons.room_service, color: Colors.white),
+        boxShadows: [
+          BoxShadow(
+            color: AppColors.success.withOpacity(0.3),
+            blurRadius: 8,
+            spreadRadius: 2,
+          )
+        ],
+      );
+    } catch (_) {}
   }
 
   Future<void> createDefaultTables() async {

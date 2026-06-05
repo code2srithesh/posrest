@@ -566,29 +566,109 @@ class TableScreen extends StatelessWidget {
                 ),
               ),
               if (table.status == AppConstants.statusOccupied)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Container(
+                Obx(() {
+                  final order = controller.openOrders[table.currentOrderId ?? ''];
+                  if (order == null) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: AppColors.gradientPrimaryTeal,
+                          ),
+                          borderRadius: AppAnimations.radiusCircle,
+                        ),
+                        child: const Text(
+                          'Open Order',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  String label = 'Open Order';
+                  Color startColor = AppColors.primary;
+                  Color endColor = AppColors.accentTeal;
+                  bool shouldPulse = false;
+
+                  switch (order.status) {
+                    case 'open':
+                      label = 'Cart Empty';
+                      startColor = Colors.teal;
+                      endColor = Colors.teal.shade300;
+                      break;
+                    case 'sent_to_kitchen':
+                      label = 'In Kitchen 🧑‍🍳';
+                      startColor = Colors.blue.shade700;
+                      endColor = Colors.blue.shade400;
+                      break;
+                    case 'preparing':
+                      label = 'Cooking 🍳';
+                      startColor = Colors.orange.shade700;
+                      endColor = Colors.orange.shade400;
+                      shouldPulse = true;
+                      break;
+                    case 'ready':
+                      label = 'FOOD READY 🛎️';
+                      startColor = Colors.green.shade700;
+                      endColor = Colors.green.shade400;
+                      shouldPulse = true;
+                      break;
+                    case 'served':
+                      label = 'Served 🍽️';
+                      startColor = Colors.cyan.shade700;
+                      endColor = Colors.cyan.shade400;
+                      break;
+                    case 'payment_pending':
+                      label = 'Payment 🧾';
+                      startColor = Colors.amber.shade700;
+                      endColor = Colors.amber.shade400;
+                      shouldPulse = true;
+                      break;
+                  }
+
+                  final badgeWidget = Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 7,
                     ),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppColors.gradientPrimaryTeal,
+                      gradient: LinearGradient(
+                        colors: [startColor, endColor],
                       ),
                       borderRadius: AppAnimations.radiusCircle,
+                      boxShadow: [
+                        if (shouldPulse)
+                          BoxShadow(
+                            color: startColor.withOpacity(0.4),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                      ],
                     ),
-                    child: const Text(
-                      'Open Order',
-                      style: TextStyle(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
-                  ),
-                ),
+                  );
+
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: shouldPulse ? PulseWidget(child: badgeWidget) : badgeWidget,
+                  );
+                }),
             ],
           ),
         ),
@@ -813,57 +893,37 @@ class TableScreen extends StatelessWidget {
       isScrollControlled: true,
       barrierColor: Colors.black.withOpacity(0.5),
       builder: (context) {
-        return FutureBuilder<OrderModel?>(
-          future: OrderRepository().getOrderById(table.currentOrderId ?? ''),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
-                height: 250,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F0A26).withOpacity(0.95),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
-                  ),
+        return Obx(() {
+          final order = controller.openOrders[table.currentOrderId ?? ''];
+          if (order == null) {
+            return Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F0A26).withOpacity(0.95),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
                 ),
-                child: const Center(
-                  child: CircularProgressIndicator(color: AppColors.accentTeal),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: AppColors.error, size: 36),
+                    const SizedBox(height: 12),
+                    const Text('Failed to find active order details', style: TextStyle(color: Colors.white70)),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Close'),
+                    )
+                  ],
                 ),
-              );
-            }
-
-            final order = snapshot.data;
-            if (order == null) {
-              return Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F0A26).withOpacity(0.95),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, color: AppColors.error, size: 36),
-                      const SizedBox(height: 12),
-                      const Text('Failed to load active order details', style: TextStyle(color: Colors.white70)),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Close'),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return _buildOccupiedHUDContent(context, controller, table, order);
-          },
-        );
+              ),
+            );
+          }
+          return _buildOccupiedHUDContent(context, controller, table, order);
+        });
       },
     );
   }
@@ -1187,6 +1247,79 @@ class TableScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
+            // "Mark as Served" action button for food ready status
+            if (order.status == 'ready')
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                child: PulseWidget(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.success, Color(0xFF2E7D32)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: AppAnimations.radiusLarge,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.success.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () async {
+                            try {
+                              await OrderRepository().updateOrderStatus(order.id, 'served');
+                              await controller.loadTables(silent: true);
+                              Navigator.of(context).pop();
+                              Get.snackbar(
+                                'Success',
+                                'Table ${table.tableNumber} order marked as served!',
+                                backgroundColor: AppColors.success,
+                                colorText: Colors.white,
+                              );
+                            } catch (e) {
+                              Get.snackbar(
+                                'Error',
+                                'Failed to mark order served: $e',
+                                backgroundColor: AppColors.error,
+                                colorText: Colors.white,
+                              );
+                            }
+                          },
+                          borderRadius: AppAnimations.radiusLarge,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.restaurant, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Mark as Served 🍽️',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
             // Action Buttons Row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
