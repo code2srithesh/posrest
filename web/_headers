@@ -1,0 +1,11 @@
+# Custom headers for Netlify deployment
+# Prevent caching of index and bootstrap assets to avoid old code loads or load freezes
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+/flutter_bootstrap.js
+  Cache-Control: no-cache, no-store, must-revalidate
+/flutter_service_worker.js
+  Cache-Control: no-cache, no-store, must-revalidate
+/manifest.json
+  Cache-Control: no-cache, no-store, must-revalidate

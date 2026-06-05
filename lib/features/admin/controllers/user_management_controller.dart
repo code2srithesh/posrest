@@ -220,6 +220,7 @@ class UserManagementController extends GetxController {
     required String description,
     required bool isVegetarian,
     required bool isSpicy,
+    required int availableStock,
   }) async {
     if (name.trim().isEmpty || price <= 0 || selectedMenuCategoryId.value.isEmpty) {
       Get.snackbar('Error', 'Invalid inputs');
@@ -239,6 +240,7 @@ class UserManagementController extends GetxController {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         syncStatus: AppConstants.syncStatusPending,
+        availableStock: availableStock,
       );
       await menuRepository.createMenuItem(item);
       await loadDashboardData();
@@ -266,6 +268,7 @@ class UserManagementController extends GetxController {
     required String description,
     required bool isVegetarian,
     required bool isSpicy,
+    required int availableStock,
   }) async {
     if (name.trim().isEmpty || price <= 0) {
       Get.snackbar('Error', 'Invalid inputs');
@@ -282,6 +285,7 @@ class UserManagementController extends GetxController {
           isSpicy: isSpicy,
           updatedAt: DateTime.now(),
           syncStatus: AppConstants.syncStatusPending,
+          availableStock: availableStock,
         );
         await menuRepository.updateMenuItem(updated);
         await loadDashboardData();

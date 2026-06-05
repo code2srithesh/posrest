@@ -12,7 +12,7 @@ import '../models/payment_model.dart';
 
 class DatabaseHelper {
   static const String dbName = 'posrest.db';
-  static const int dbVersion = 2;
+  static const int dbVersion = 3;
 
   static final DatabaseHelper _instance = DatabaseHelper._internal();
 
@@ -122,6 +122,7 @@ class DatabaseHelper {
         updatedAt TEXT NOT NULL,
         syncStatus TEXT NOT NULL,
         deletedAt TEXT,
+        availableStock INTEGER NOT NULL DEFAULT 50,
         FOREIGN KEY (categoryId) REFERENCES menu_categories(id)
       )
     ''');
@@ -240,6 +241,13 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE order_items ADD COLUMN status TEXT NOT NULL DEFAULT "pending"');
       await db.execute('ALTER TABLE order_items ADD COLUMN estimatedPrepTime INTEGER NOT NULL DEFAULT 15');
       await db.execute('ALTER TABLE order_items ADD COLUMN completedAt TEXT');
+    }
+    if (oldVersion < 3) {
+      try {
+        await db.execute('ALTER TABLE menu_items ADD COLUMN availableStock INTEGER NOT NULL DEFAULT 50');
+      } catch (e) {
+        // Safe check if column already exists
+      }
     }
   }
 

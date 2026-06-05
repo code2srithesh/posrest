@@ -14,6 +14,7 @@ class MenuItemModel {
   final DateTime updatedAt;
   final String syncStatus;
   final DateTime? deletedAt;
+  final int availableStock;
 
   MenuItemModel({
     required this.id,
@@ -31,6 +32,7 @@ class MenuItemModel {
     required this.updatedAt,
     required this.syncStatus,
     this.deletedAt,
+    this.availableStock = 50,
   });
 
   Map<String, dynamic> toMap() {
@@ -50,6 +52,7 @@ class MenuItemModel {
       'updatedAt': updatedAt.toIso8601String(),
       'syncStatus': syncStatus,
       'deletedAt': deletedAt?.toIso8601String(),
+      'availableStock': availableStock,
     };
   }
 
@@ -76,6 +79,7 @@ class MenuItemModel {
       deletedAt: map['deletedAt'] != null
           ? DateTime.parse(map['deletedAt'])
           : null,
+      availableStock: map['availableStock'] ?? 50,
     );
   }
 
@@ -95,6 +99,7 @@ class MenuItemModel {
     DateTime? updatedAt,
     String? syncStatus,
     DateTime? deletedAt,
+    int? availableStock,
   }) {
     return MenuItemModel(
       id: id ?? this.id,
@@ -112,6 +117,7 @@ class MenuItemModel {
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
       deletedAt: deletedAt ?? this.deletedAt,
+      availableStock: availableStock ?? this.availableStock,
     );
   }
 

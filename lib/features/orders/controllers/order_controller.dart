@@ -226,6 +226,16 @@ class OrderController extends GetxController {
 
       isLoading.value = true;
 
+      // Decrement availableStock in database for each item ordered
+      for (final orderItem in currentOrderItems) {
+        final menuItem = await menuRepository.getMenuItemById(orderItem.menuItemId);
+        if (menuItem != null) {
+          final newStock = (menuItem.availableStock - orderItem.quantity).clamp(0, 999999);
+          final updatedItem = menuItem.copyWith(availableStock: newStock);
+          await menuRepository.updateMenuItem(updatedItem);
+        }
+      }
+
       final updated = currentOrder.value!.copyWith(
         items: currentOrderItems.toList(),
         subtotal: subtotal,

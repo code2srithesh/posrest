@@ -697,7 +697,30 @@ class UserManagementScreen extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Text(item.description ?? 'No description.', style: const TextStyle(color: Colors.white54, fontSize: 11)),
                                   const SizedBox(height: 6),
-                                  Text('₹${item.price.toStringAsFixed(2)}', style: const TextStyle(color: AppColors.accentTeal, fontWeight: FontWeight.bold, fontSize: 14)),
+                                  Row(
+                                    children: [
+                                      Text('₹${item.price.toStringAsFixed(2)}', style: const TextStyle(color: AppColors.accentTeal, fontWeight: FontWeight.bold, fontSize: 14)),
+                                      const SizedBox(width: 14),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: item.availableStock <= 5 ? AppColors.error.withOpacity(0.15) : Colors.white.withOpacity(0.04),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: item.availableStock <= 5 ? AppColors.error.withOpacity(0.4) : Colors.white10),
+                                        ),
+                                        child: Text(
+                                          item.availableStock <= 0 
+                                              ? 'OUT OF STOCK' 
+                                              : '${item.availableStock} units left',
+                                          style: TextStyle(
+                                            color: item.availableStock <= 5 ? AppColors.error : Colors.white70,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -1174,6 +1197,7 @@ class UserManagementScreen extends StatelessWidget {
     final nameCtrl = TextEditingController();
     final priceCtrl = TextEditingController();
     final descCtrl = TextEditingController();
+    final stockCtrl = TextEditingController(text: '50');
     bool isVeg = true;
     bool isSpicy = false;
 
@@ -1221,6 +1245,16 @@ class UserManagementScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    TextField(
+                      controller: stockCtrl,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Available Stock (Units)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     CheckboxListTile(
                       title: const Text('Vegetarian Dish', style: TextStyle(color: Colors.white)),
                       value: isVeg,
@@ -1245,12 +1279,14 @@ class UserManagementScreen extends StatelessWidget {
                             label: 'Add',
                             onPressed: () {
                               final price = double.tryParse(priceCtrl.text) ?? 0.0;
+                              final stock = int.tryParse(stockCtrl.text) ?? 50;
                               controller.addMenuItem(
                                 name: nameCtrl.text,
                                 price: price,
                                 description: descCtrl.text,
                                 isVegetarian: isVeg,
                                 isSpicy: isSpicy,
+                                availableStock: stock,
                               );
                             },
                           ),
@@ -1271,6 +1307,7 @@ class UserManagementScreen extends StatelessWidget {
     final nameCtrl = TextEditingController(text: item.name);
     final priceCtrl = TextEditingController(text: item.price.toString());
     final descCtrl = TextEditingController(text: item.description ?? '');
+    final stockCtrl = TextEditingController(text: item.availableStock.toString());
     bool isVeg = item.isVegetarian;
     bool isSpicy = item.isSpicy ?? false;
 
@@ -1318,6 +1355,16 @@ class UserManagementScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    TextField(
+                      controller: stockCtrl,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Available Stock (Units)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     CheckboxListTile(
                       title: const Text('Vegetarian Dish', style: TextStyle(color: Colors.white)),
                       value: isVeg,
@@ -1342,6 +1389,7 @@ class UserManagementScreen extends StatelessWidget {
                             label: 'Save Changes',
                             onPressed: () {
                               final price = double.tryParse(priceCtrl.text) ?? 0.0;
+                              final stock = int.tryParse(stockCtrl.text) ?? 50;
                               controller.editMenuItem(
                                 id: item.id,
                                 name: nameCtrl.text,
@@ -1349,6 +1397,7 @@ class UserManagementScreen extends StatelessWidget {
                                 description: descCtrl.text,
                                 isVegetarian: isVeg,
                                 isSpicy: isSpicy,
+                                availableStock: stock,
                               );
                             },
                           ),

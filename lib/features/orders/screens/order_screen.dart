@@ -674,6 +674,17 @@ class OrderScreen extends StatelessWidget {
                                 color: AppColors.accentTeal,
                               ),
                             ),
+                            const SizedBox(height: 2),
+                            Text(
+                              item.availableStock <= 0 
+                                  ? 'Out of stock' 
+                                  : '${item.availableStock} left',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: item.availableStock <= 5 ? AppColors.error : Colors.white54,
+                              ),
+                            ),
                           ],
                         ),
                         Row(
@@ -920,23 +931,44 @@ class OrderScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.glassOverlayTeal,
-                                  borderRadius: AppAnimations.radiusSmall,
-                                ),
-                                child: Text(
-                                  '₹${item.price.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.accentTeal,
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.glassOverlayTeal,
+                                      borderRadius: AppAnimations.radiusSmall,
+                                    ),
+                                    child: Text(
+                                      '₹${item.price.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.accentTeal,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(width: 10),
+                                  Icon(
+                                    item.availableStock <= 5 ? Icons.warning_amber_rounded : Icons.inventory_2_outlined,
+                                    size: 14,
+                                    color: item.availableStock <= 5 ? AppColors.error : AppColors.accentTeal,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    item.availableStock <= 0 
+                                        ? 'OUT OF STOCK' 
+                                        : '${item.availableStock} left',
+                                    style: TextStyle(
+                                      color: item.availableStock <= 5 ? AppColors.error : Colors.white70,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -1082,7 +1114,17 @@ class OrderScreen extends StatelessWidget {
                               ),
                               _buildQuantityButton('+', () {
                                 dialogSetState(() {
-                                  quantity++;
+                                  if (quantity < item.availableStock) {
+                                    quantity++;
+                                  } else {
+                                    Get.snackbar(
+                                      'Stock Limit Reached',
+                                      'Only ${item.availableStock} units of ${item.name} are available.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: AppColors.error.withOpacity(0.9),
+                                      colorText: Colors.white,
+                                    );
+                                  }
                                 });
                               }),
                             ],
@@ -1134,58 +1176,87 @@ class OrderScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     // Add to Order Button
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: AppColors.gradientPrimaryTeal,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: AppAnimations.radiusMedium,
-                        boxShadow: AppAnimations.shadowGlow,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            orderController.addItemToOrder(
-                              item,
-                              quantity: quantity,
-                              notes: notes.text.isNotEmpty ? notes.text : null,
-                            );
-                            Get.back();
-                            Get.snackbar(
-                              'Added to Order',
-                              '${quantity}x ${item.name}',
-                              snackPosition: SnackPosition.BOTTOM,
-                              duration: const Duration(seconds: 2),
-                            );
-                          },
-                          child: Padding(
+                    item.availableStock <= 0
+                        ? Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withOpacity(0.15),
+                              borderRadius: AppAnimations.radiusMedium,
+                              border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.add_shopping_cart,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Add ${quantity}x to Order',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'Out of Stock',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.error,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: AppColors.gradientPrimaryTeal,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: AppAnimations.radiusMedium,
+                              boxShadow: AppAnimations.shadowGlow,
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  if (quantity > item.availableStock) {
+                                    Get.snackbar(
+                                      'Stock Limit Reached',
+                                      'Only ${item.availableStock} units available.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: AppColors.error,
+                                      colorText: Colors.white,
+                                    );
+                                    return;
+                                  }
+                                  orderController.addItemToOrder(
+                                    item,
+                                    quantity: quantity,
+                                    notes: notes.text.isNotEmpty ? notes.text : null,
+                                  );
+                                  Get.back();
+                                  Get.snackbar(
+                                    'Added to Order',
+                                    '${quantity}x ${item.name}',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    duration: const Duration(seconds: 2),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.add_shopping_cart,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Add ${quantity}x to Order',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -1566,13 +1637,28 @@ class OrderScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Text(
-                        '₹${item.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.accentTeal,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '₹${item.price.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.accentTeal,
+                            ),
+                          ),
+                          Text(
+                            item.availableStock <= 0 
+                                ? 'Out of stock' 
+                                : '${item.availableStock} left',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: item.availableStock <= 5 ? AppColors.error : Colors.white54,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
