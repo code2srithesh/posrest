@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
 
+import '../../../core/widgets/custom_notification.dart';
+
 class CashierController extends GetxController {
   final orderRepository = OrderRepository();
 
@@ -12,7 +14,7 @@ class CashierController extends GetxController {
   // Safe snackbar call
   void _showSnackbar(String title, String message) {
     try {
-      Get.snackbar(title, message);
+      CustomNotification.showSnackbar(title, message);
     } catch (e) {
       // Silently fail if context is not available (e.g., in tests)
     }

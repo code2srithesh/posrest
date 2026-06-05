@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../services/auth_service.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class RegisterController extends GetxController {
   final nameController = TextEditingController();
@@ -48,7 +49,7 @@ class RegisterController extends GetxController {
       );
 
       if (result['success'] == true) {
-        Get.snackbar(
+        CustomNotification.showSnackbar(
           'Registration Submitted',
           result['message'] ?? 'Awaiting admin approval',
           backgroundColor: Colors.green,
@@ -57,7 +58,7 @@ class RegisterController extends GetxController {
         Get.offAllNamed('/login');
       } else {
         errorMessage.value = result['message'] ?? 'Registration failed';
-        Get.snackbar(
+        CustomNotification.showSnackbar(
           'Registration Failed',
           errorMessage.value,
           backgroundColor: Colors.orange,
@@ -68,7 +69,7 @@ class RegisterController extends GetxController {
       if (!isClosed) {
         errorMessage.value = 'Error: $e';
       }
-      Get.snackbar(
+      CustomNotification.showSnackbar(
         'Error',
         'Registration error: $e',
         backgroundColor: Colors.red,

@@ -11,6 +11,7 @@ import '../../../services/auth_service.dart';
 import '../controllers/table_controller.dart';
 import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class TableScreen extends StatelessWidget {
   const TableScreen({Key? key}) : super(key: key);
@@ -863,13 +864,11 @@ class TableScreen extends StatelessWidget {
                         final tableNum = int.tryParse(tableNumberController.text.trim());
                         final cap = int.tryParse(capacityController.text.trim());
                         if (tableNum == null || cap == null || tableNum <= 0 || cap <= 0) {
-                          Get.snackbar(
+                          CustomNotification.showSnackbar(
                             'Validation Error',
                             'Please enter valid numbers greater than 0.',
                             backgroundColor: AppColors.error,
                             colorText: Colors.white,
-                            snackPosition: SnackPosition.BOTTOM,
-                            margin: const EdgeInsets.all(16),
                           );
                           return;
                         }
@@ -1278,14 +1277,14 @@ class TableScreen extends StatelessWidget {
                               await OrderRepository().updateOrderStatus(order.id, 'served');
                               await controller.loadTables(silent: true);
                               Navigator.of(context).pop();
-                              Get.snackbar(
+                              CustomNotification.showSnackbar(
                                 'Success',
                                 'Table ${table.tableNumber} order marked as served!',
                                 backgroundColor: AppColors.success,
                                 colorText: Colors.white,
                               );
                             } catch (e) {
-                              Get.snackbar(
+                              CustomNotification.showSnackbar(
                                 'Error',
                                 'Failed to mark order served: $e',
                                 backgroundColor: AppColors.error,

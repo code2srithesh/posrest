@@ -5,6 +5,7 @@ import '../../../data/models/menu_item_model.dart';
 import '../../../data/models/modifier_model.dart';
 import '../../../data/repositories/menu_repository.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class MenuController extends GetxController {
   final menuRepository = MenuRepository();
@@ -39,7 +40,7 @@ class MenuController extends GetxController {
         await loadAllMenuItems();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load menu: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to load menu: $e');
     } finally {
       isLoading.value = false;
     }
@@ -52,7 +53,7 @@ class MenuController extends GetxController {
       menuItems.value = items;
       applyAllFilters();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load all menu items: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to load all menu items: $e');
     } finally {
       isLoading.value = false;
     }
@@ -413,7 +414,7 @@ class MenuController extends GetxController {
       
       await loadAllMenuItems();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create premium menu database: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to create premium menu database: $e');
     }
   }
 
@@ -423,7 +424,7 @@ class MenuController extends GetxController {
       final items = await menuRepository.getItemsByCategory(categoryId);
       menuItems.value = items;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load menu items: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to load menu items: $e');
     }
   }
 
@@ -520,9 +521,9 @@ class MenuController extends GetxController {
       );
       await menuRepository.createMenuItem(item);
       await loadMenu();
-      Get.snackbar('Success', 'Menu item added');
+      CustomNotification.showSnackbar('Success', 'Menu item added');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add menu item: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to add menu item: $e');
     }
   }
 
@@ -534,10 +535,10 @@ class MenuController extends GetxController {
   }) async {
     try {
       // Implementation would update the item in repository
-      Get.snackbar('Success', 'Menu item updated');
+      CustomNotification.showSnackbar('Success', 'Menu item updated');
       await loadMenu();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update menu item: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to update menu item: $e');
     }
   }
 
@@ -547,9 +548,9 @@ class MenuController extends GetxController {
       menuItems.removeWhere((item) => item.id == itemId);
       filteredMenuItems.removeWhere((item) => item.id == itemId);
       await loadMenu();
-      Get.snackbar('Success', 'Menu item deleted');
+      CustomNotification.showSnackbar('Success', 'Menu item deleted');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to delete menu item: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to delete menu item: $e');
     }
   }
 }

@@ -7,6 +7,7 @@ import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../controllers/billing_controller.dart';
 import '../../../services/auth_service.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class BillingScreen extends StatelessWidget {
   final String orderId;
@@ -795,7 +796,7 @@ class BillingScreen extends StatelessWidget {
   void _handlePayment(BillingController controller) async {
     final amount = controller.totalAmount;
     if (amount <= 0) {
-      Get.snackbar('Error', 'Invalid amount');
+      CustomNotification.showSnackbar('Error', 'Invalid amount');
       return;
     }
 
@@ -1077,13 +1078,11 @@ class BillingScreen extends StatelessWidget {
                     ),
                     onPressed: () {
                       Get.back();
-                      Get.snackbar(
+                      CustomNotification.showSnackbar(
                         'Simulated Download',
                         'Receipt PDF successfully generated and saved to /Downloads/POSRest_Receipt_${order.id.substring(0, 8)}.pdf',
                         backgroundColor: AppColors.success,
                         colorText: Colors.white,
-                        snackPosition: SnackPosition.BOTTOM,
-                        margin: const EdgeInsets.all(16),
                       );
                     },
                     icon: const Icon(Icons.download, size: 18),
@@ -1099,13 +1098,11 @@ class BillingScreen extends StatelessWidget {
                     ),
                     onPressed: () {
                       Get.back();
-                      Get.snackbar(
+                      CustomNotification.showSnackbar(
                         'Thermal Print Triggered',
                         'Successfully sent to ESC/POS thermal printer on Table ${order.tableNumber}. Print Completed!',
                         backgroundColor: AppColors.success,
                         colorText: Colors.white,
-                        snackPosition: SnackPosition.BOTTOM,
-                        margin: const EdgeInsets.all(16),
                       );
                     },
                     icon: const Icon(Icons.print, size: 18),

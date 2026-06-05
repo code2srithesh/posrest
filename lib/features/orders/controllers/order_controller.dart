@@ -10,6 +10,8 @@ import '../../../services/preferences_service.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../tables/controllers/table_controller.dart';
 
+import '../../../core/widgets/custom_notification.dart';
+
 class OrderController extends GetxController {
   final orderRepository = OrderRepository();
   final tableRepository = TableRepository();
@@ -24,7 +26,7 @@ class OrderController extends GetxController {
   void _showSnackbar(String title, String message, {bool isError = false}) {
     if (Get.testMode) return;
     try {
-      Get.snackbar(
+      CustomNotification.showSnackbar(
         title,
         message,
         backgroundColor: isError ? Colors.red : Colors.green,

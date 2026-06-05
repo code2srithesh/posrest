@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../themes/app_colors.dart';
-import '../themes/app_animations.dart';
 
 class CustomNotification {
   static OverlayEntry? _currentOverlay;
@@ -13,15 +12,26 @@ class CustomNotification {
     required String message,
     IconData icon = Icons.info_outline,
     Color? color,
-    Duration duration = const Duration(milliseconds: 2200), // Faster but readable duration
+    Duration duration = const Duration(milliseconds: 1500), // Fast but readable duration
   }) {
     final context = Get.context;
-    if (context == null) return;
 
     // Dismiss any existing custom notification immediately
     dismiss();
 
-    final overlayState = Overlay.of(context);
+    OverlayState? overlayState;
+    try {
+      overlayState = Get.key.currentState?.overlay;
+    } catch (_) {}
+
+    if (overlayState == null && context != null) {
+      try {
+        final oContext = Get.overlayContext ?? context;
+        overlayState = Overlay.of(oContext);
+      } catch (_) {}
+    }
+
+    if (overlayState == null) return;
     final themeColor = color ?? AppColors.accentTeal;
 
     _currentOverlay = OverlayEntry(
@@ -38,6 +48,46 @@ class CustomNotification {
     );
 
     overlayState.insert(_currentOverlay!);
+  }
+
+  static void showSnackbar(
+    String title,
+    String message, {
+    Color? backgroundColor,
+    Color? colorText,
+    Duration duration = const Duration(milliseconds: 1500),
+    IconData? icon,
+  }) {
+    Color themeColor = backgroundColor ?? AppColors.accentTeal;
+    IconData themeIcon = icon ?? Icons.info_outline;
+
+    final lowerTitle = title.toLowerCase();
+    final lowerMessage = message.toLowerCase();
+
+    // soft green accent for success while maintaining a clean look
+    if (lowerTitle.contains('success') || lowerMessage.contains('success') || 
+        lowerTitle.contains('saved') || lowerMessage.contains('saved') ||
+        lowerTitle.contains('approved') || lowerTitle.contains('updated') ||
+        lowerTitle.contains('created') || lowerTitle.contains('ready')) {
+      themeColor = const Color(0xFF2ECC71); // Soft premium success green
+      themeIcon = Icons.check_circle_outline;
+    } else if (lowerTitle.contains('error') || lowerMessage.contains('error') || 
+               lowerTitle.contains('fail') || lowerMessage.contains('fail')) {
+      themeColor = AppColors.error;
+      themeIcon = Icons.error_outline;
+    } else if (lowerTitle.contains('warning') || lowerMessage.contains('warning') || 
+               lowerTitle.contains('validation') || lowerTitle.contains('invalid')) {
+      themeColor = AppColors.warning;
+      themeIcon = Icons.warning_amber_outlined;
+    }
+
+    show(
+      title: title,
+      message: message,
+      color: themeColor,
+      icon: themeIcon,
+      duration: duration,
+    );
   }
 
   static void dismiss() {
@@ -74,7 +124,6 @@ class _NotificationOverlayWidget extends StatefulWidget {
 class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   Timer? _dismissTimer;
 
@@ -83,11 +132,7 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 220), // Fast slide-in/out transitions
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+      duration: const Duration(milliseconds: 180), // Subtle and fast fade in/out
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -118,102 +163,92 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
-    // Compute horizontal offsets to center the card
-    final leftOffset = screenWidth > 420 ? (screenWidth - 420) / 2 : 16.0;
-    final rightOffset = screenWidth > 420 ? (screenWidth - 420) / 2 : 16.0;
-    
-    // Position vertically in the center of the screen
-    final topOffset = (screenHeight - 85.0) / 2;
-
-    return Positioned(
-      top: topOffset,
-      left: leftOffset,
-      right: rightOffset,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Opacity(
-            opacity: _fadeAnimation.value,
-            child: Transform.scale(
-              scale: _scaleAnimation.value,
+    return Align(
+      alignment: Alignment.center,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _fadeAnimation.value,
               child: child,
-            ),
-          );
-        },
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F0A26).withOpacity(0.95),
+            );
+          },
+          child: Material(
+            color: Colors.transparent,
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: widget.color.withOpacity(0.4),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.color.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                )
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   decoration: BoxDecoration(
-                    color: widget.color.withOpacity(0.12),
-                    shape: BoxShape.circle,
+                    color: const Color(0xFF101015).withOpacity(0.65), // Translucent dark glass
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: widget.color.withOpacity(0.4),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.25),
+                        blurRadius: 15,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
                   ),
-                  child: Icon(
-                    widget.icon,
-                    color: widget.color,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        widget.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          decoration: TextDecoration.none,
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: widget.color.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          widget.icon,
+                          color: widget.color,
+                          size: 20,
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        widget.message,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          decoration: TextDecoration.none,
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (widget.title.isNotEmpty)
+                              Text(
+                                widget.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            if (widget.title.isNotEmpty && widget.message.isNotEmpty)
+                              const SizedBox(height: 2),
+                            if (widget.message.isNotEmpty)
+                              Text(
+                                widget.message,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.normal,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _close,
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.white38,
-                    size: 18,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

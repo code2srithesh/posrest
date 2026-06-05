@@ -15,6 +15,7 @@ import '../../../data/repositories/payment_repository.dart';
 import '../../../data/repositories/menu_repository.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/preferences_service.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class UserManagementController extends GetxController {
   // Creation Form Controllers
@@ -131,7 +132,7 @@ class UserManagementController extends GetxController {
       }
     } catch (e) {
       if (!silent) {
-        Get.snackbar('Error', 'Failed to load dashboard data: $e');
+        CustomNotification.showSnackbar('Error', 'Failed to load dashboard data: $e');
       }
     } finally {
       if (!silent) {
@@ -147,7 +148,7 @@ class UserManagementController extends GetxController {
       final items = await menuRepository.getItemsByCategory(categoryId);
       menuItems.assignAll(items);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load items: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to load items: $e');
     }
   }
 
@@ -156,7 +157,7 @@ class UserManagementController extends GetxController {
     if (nameController.text.isEmpty ||
         emailController.text.isEmpty ||
         passwordController.text.isEmpty) {
-      Get.snackbar('Validation Error', 'Please fill all fields');
+      CustomNotification.showSnackbar('Validation Error', 'Please fill all fields');
       return;
     }
 
@@ -177,12 +178,12 @@ class UserManagementController extends GetxController {
         isApproved.value = true;
         await loadDashboardData();
         Get.back(); // Close dialog
-        Get.snackbar('Success', result['message'] ?? 'User created');
+        CustomNotification.showSnackbar('Success', result['message'] ?? 'User created');
       } else {
-        Get.snackbar('Error', result['message'] ?? 'Failed to create user');
+        CustomNotification.showSnackbar('Error', result['message'] ?? 'Failed to create user');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create user: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to create user: $e');
     } finally {
       isLoading.value = false;
     }
@@ -193,9 +194,9 @@ class UserManagementController extends GetxController {
     final result = await AuthService.instance.approveUser(userId);
     if (result['success'] == true) {
       await loadDashboardData();
-      Get.snackbar('Approved', result['message'] ?? 'User approved');
+      CustomNotification.showSnackbar('Approved', result['message'] ?? 'User approved');
     } else {
-      Get.snackbar('Error', result['message'] ?? 'Approval failed');
+      CustomNotification.showSnackbar('Error', result['message'] ?? 'Approval failed');
     }
   }
 
@@ -203,9 +204,9 @@ class UserManagementController extends GetxController {
     final result = await AuthService.instance.rejectUser(userId);
     if (result['success'] == true) {
       await loadDashboardData();
-      Get.snackbar('Rejected', result['message'] ?? 'User removed');
+      CustomNotification.showSnackbar('Rejected', result['message'] ?? 'User removed');
     } else {
-      Get.snackbar('Error', result['message'] ?? 'Rejection failed');
+      CustomNotification.showSnackbar('Error', result['message'] ?? 'Rejection failed');
     }
   }
 
@@ -226,9 +227,9 @@ class UserManagementController extends GetxController {
       await menuRepository.createCategory(category);
       await loadDashboardData();
       Get.back();
-      Get.snackbar('Success', 'Category added');
+      CustomNotification.showSnackbar('Success', 'Category added');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add category: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to add category: $e');
     }
   }
 
@@ -241,7 +242,7 @@ class UserManagementController extends GetxController {
     required int availableStock,
   }) async {
     if (name.trim().isEmpty || price <= 0 || selectedMenuCategoryId.value.isEmpty) {
-      Get.snackbar('Error', 'Invalid inputs');
+      CustomNotification.showSnackbar('Error', 'Invalid inputs');
       return;
     }
     try {
@@ -263,9 +264,9 @@ class UserManagementController extends GetxController {
       await menuRepository.createMenuItem(item);
       await loadDashboardData();
       Get.back();
-      Get.snackbar('Success', 'Menu item added');
+      CustomNotification.showSnackbar('Success', 'Menu item added');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add menu item: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to add menu item: $e');
     }
   }
 
@@ -273,9 +274,9 @@ class UserManagementController extends GetxController {
     try {
       await menuRepository.deleteMenuItem(itemId);
       await loadDashboardData();
-      Get.snackbar('Success', 'Menu item deleted');
+      CustomNotification.showSnackbar('Success', 'Menu item deleted');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to delete menu item: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to delete menu item: $e');
     }
   }
 
@@ -289,7 +290,7 @@ class UserManagementController extends GetxController {
     required int availableStock,
   }) async {
     if (name.trim().isEmpty || price <= 0) {
-      Get.snackbar('Error', 'Invalid inputs');
+      CustomNotification.showSnackbar('Error', 'Invalid inputs');
       return;
     }
     try {
@@ -308,10 +309,10 @@ class UserManagementController extends GetxController {
         await menuRepository.updateMenuItem(updated);
         await loadDashboardData();
         Get.back();
-        Get.snackbar('Success', 'Menu item updated');
+        CustomNotification.showSnackbar('Success', 'Menu item updated');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update menu item: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to update menu item: $e');
     }
   }
 
@@ -322,17 +323,17 @@ class UserManagementController extends GetxController {
 
     try {
       if (name.isEmpty) {
-        Get.snackbar('Error', 'Restaurant name cannot be empty');
+        CustomNotification.showSnackbar('Error', 'Restaurant name cannot be empty');
         return;
       }
 
       await preferencesService.setRestaurantName(name);
       await preferencesService.setTaxRate(tax);
 
-      Get.snackbar('Success', 'Global settings updated successfully');
+      CustomNotification.showSnackbar('Success', 'Global settings updated successfully');
       await loadDashboardData();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save settings: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to save settings: $e');
     }
   }
 

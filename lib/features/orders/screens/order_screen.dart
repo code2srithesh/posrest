@@ -10,6 +10,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../features/menu/controllers/menu_controller.dart' as menu_ctrl;
 import '../controllers/order_controller.dart';
 import '../../../services/auth_service.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class OrderScreen extends StatelessWidget {
   const OrderScreen({Key? key}) : super(key: key);
@@ -1117,10 +1118,9 @@ class OrderScreen extends StatelessWidget {
                                   if (quantity < item.availableStock) {
                                     quantity++;
                                   } else {
-                                    Get.snackbar(
+                                    CustomNotification.showSnackbar(
                                       'Stock Limit Reached',
                                       'Only ${item.availableStock} units of ${item.name} are available.',
-                                      snackPosition: SnackPosition.BOTTOM,
                                       backgroundColor: AppColors.error.withOpacity(0.9),
                                       colorText: Colors.white,
                                     );
@@ -1211,10 +1211,9 @@ class OrderScreen extends StatelessWidget {
                               child: InkWell(
                                 onTap: () {
                                   if (quantity > item.availableStock) {
-                                    Get.snackbar(
+                                    CustomNotification.showSnackbar(
                                       'Stock Limit Reached',
                                       'Only ${item.availableStock} units available.',
-                                      snackPosition: SnackPosition.BOTTOM,
                                       backgroundColor: AppColors.error,
                                       colorText: Colors.white,
                                     );
@@ -1226,10 +1225,9 @@ class OrderScreen extends StatelessWidget {
                                     notes: notes.text.isNotEmpty ? notes.text : null,
                                   );
                                   Get.back();
-                                  Get.snackbar(
+                                  CustomNotification.showSnackbar(
                                     'Added to Order',
                                     '${quantity}x ${item.name}',
-                                    snackPosition: SnackPosition.BOTTOM,
                                     duration: const Duration(seconds: 2),
                                   );
                                 },

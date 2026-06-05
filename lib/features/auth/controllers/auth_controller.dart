@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../services/auth_service.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class AuthController extends GetxController {
   final emailController = TextEditingController();
@@ -19,7 +20,7 @@ class AuthController extends GetxController {
 
   Future<void> login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      Get.snackbar(
+      CustomNotification.showSnackbar(
         'Validation Error',
         'Please enter email and password',
         backgroundColor: Colors.red,
@@ -52,7 +53,7 @@ class AuthController extends GetxController {
           user?.role ?? 'waiter',
         );
         resetLoginForm();
-        Get.snackbar(
+        CustomNotification.showSnackbar(
           'Success',
           '${result['message']}\nWelcome ${result['user']?.name}!',
           backgroundColor: Colors.green,
@@ -66,7 +67,7 @@ class AuthController extends GetxController {
         }
 
         errorMessage.value = result['message'] ?? 'Login failed';
-        Get.snackbar(
+        CustomNotification.showSnackbar(
           'Login Failed',
           result['message'] ?? 'Invalid credentials',
           backgroundColor: Colors.orange,
@@ -77,7 +78,7 @@ class AuthController extends GetxController {
       if (!isClosed) {
         errorMessage.value = 'Error: $e';
       }
-      Get.snackbar(
+      CustomNotification.showSnackbar(
         'Error',
         'Login error: $e',
         backgroundColor: Colors.red,

@@ -10,11 +10,13 @@ import '../../tables/controllers/table_controller.dart';
 import '../../orders/controllers/order_controller.dart';
 import '../../admin/controllers/user_management_controller.dart';
 
+import '../../../core/widgets/custom_notification.dart';
+
 class BillingController extends GetxController {
   void _showSnackbar(String title, String message, {bool isError = false}) {
     if (Get.testMode) return;
     try {
-      Get.snackbar(
+      CustomNotification.showSnackbar(
         title,
         message,
         backgroundColor: isError ? Colors.red : Colors.green,

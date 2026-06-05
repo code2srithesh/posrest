@@ -80,7 +80,7 @@ class TableController extends GetxController {
       }
     } catch (e) {
       if (!silent) {
-        Get.snackbar('Error', 'Failed to load tables: $e');
+        CustomNotification.showSnackbar('Error', 'Failed to load tables: $e');
       }
     } finally {
       if (!silent) {
@@ -118,7 +118,7 @@ class TableController extends GetxController {
         tables.add(table);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create default tables: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to create default tables: $e');
     }
   }
 
@@ -138,9 +138,9 @@ class TableController extends GetxController {
       await tableRepository.createTable(table);
       tables.add(table);
       Get.back();
-      Get.snackbar('Success', 'Table created successfully');
+      CustomNotification.showSnackbar('Success', 'Table created successfully');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create table: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to create table: $e');
     }
   }
 
@@ -161,7 +161,7 @@ class TableController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update table: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to update table: $e');
     }
   }
 
@@ -176,7 +176,7 @@ class TableController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to set table occupied: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to set table occupied: $e');
     }
   }
 
@@ -191,7 +191,7 @@ class TableController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to set table free: $e');
+      CustomNotification.showSnackbar('Error', 'Failed to set table free: $e');
     }
   }
 
