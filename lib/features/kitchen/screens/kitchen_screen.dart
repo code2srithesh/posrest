@@ -6,6 +6,7 @@ import '../../../core/widgets/theme_toggle_button.dart';
 import '../../../core/widgets/glassmorphic_widgets.dart';
 import '../../../core/widgets/admin_bottom_nav_bar.dart';
 import '../../../services/auth_service.dart';
+import '../../../data/models/order_model.dart';
 import '../controllers/kitchen_controller.dart';
 
 class KitchenScreen extends StatelessWidget {
@@ -58,6 +59,17 @@ class KitchenScreen extends StatelessWidget {
                 )
               : null,
           actions: [
+            Obx(() => TextButton.icon(
+              onPressed: () => kitchenController.showDashboard.toggle(),
+              icon: Icon(
+                kitchenController.showDashboard.value ? Icons.restaurant_menu : Icons.analytics_outlined,
+                color: Colors.white,
+              ),
+              label: Text(
+                kitchenController.showDashboard.value ? 'Active Queue' : 'Chef Summary',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            )),
             IconButton(
               icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: () => kitchenController.refreshOrders(),
@@ -95,6 +107,10 @@ class KitchenScreen extends StatelessWidget {
                 ),
               ),
             );
+          }
+
+          if (kitchenController.showDashboard.value) {
+            return _buildChefDashboard(context, kitchenController);
           }
 
           if (kitchenController.allOrders.isEmpty) {
@@ -301,6 +317,94 @@ class KitchenScreen extends StatelessWidget {
                   onTap = () => controller.markOrderServed(order.id);
                 }
 
+                if (order.status == 'sent_to_kitchen' || order.status == 'preparing') {
+                  return Row(
+                    children: [
+                      // Reject Button
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.red.shade800, Colors.red.shade500],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: AppAnimations.radiusLarge,
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => controller.rejectOrder(order.id),
+                              borderRadius: AppAnimations.radiusLarge,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.cancel_outlined, color: Colors.white, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Reject',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Primary action button (Start Prep / Ready)
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: gradientColors,
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: AppAnimations.radiusLarge,
+                            boxShadow: AppAnimations.shadowGlow,
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: onTap,
+                              borderRadius: AppAnimations.radiusLarge,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(icon, color: Colors.white, size: 16),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      label,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                // Full width button for serving
                 return SizedBox(
                   width: double.infinity,
                   child: Container(
@@ -431,5 +535,354 @@ class KitchenScreen extends StatelessWidget {
       default:
         return Icons.info_outline;
     }
+  }
+
+  // ==================== CHEF DASHBOARD UI HELPER METHODS ====================
+  Widget _buildChefDashboard(BuildContext context, KitchenController controller) {
+    final acceptedCount = controller.dailyOrders.where((o) => o.status == 'preparing').length;
+    final preparedCount = controller.dailyOrders.where((o) => o.status == 'ready' || o.status == 'served' || o.status == 'paid').length;
+    final rejectedCount = controller.dailyOrders.where((o) => o.status == 'cancelled').length;
+
+    final preparedDishCounts = <String, int>{};
+    for (final order in controller.dailyOrders) {
+      if (order.status != 'cancelled') {
+        for (final item in order.items) {
+          if (item.status == OrderItemStatus.ready ||
+              item.status == OrderItemStatus.served) {
+            preparedDishCounts[item.itemName] = (preparedDishCounts[item.itemName] ?? 0) + item.quantity;
+          }
+        }
+      }
+    }
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Chef Performance Summary',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.lightText,
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Real-time overview of accepted, prepared, and rejected kitchen orders for today.',
+              style: TextStyle(color: AppColors.lightTextSecondary, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDashboardMetricTile(
+                    'Accepted & Cooking',
+                    '$acceptedCount',
+                    Icons.soup_kitchen_outlined,
+                    AppColors.accentOrange,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildDashboardMetricTile(
+                    'Prepared (Ready)',
+                    '$preparedCount',
+                    Icons.check_circle_outline,
+                    AppColors.success,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildDashboardMetricTile(
+                    'Rejected / Cancelled',
+                    '$rejectedCount',
+                    Icons.cancel_outlined,
+                    Colors.red,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 900;
+                
+                final leftColumn = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'PREPARED FOOD DETAILS',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    GlassContainer(
+                      backdropColor: Colors.white.withOpacity(0.02),
+                      borderRadius: BorderRadius.circular(16),
+                      padding: const EdgeInsets.all(16),
+                      child: preparedDishCounts.isEmpty
+                          ? const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 24),
+                                child: Text(
+                                  'No dishes prepared today yet.',
+                                  style: TextStyle(color: Colors.white38, fontSize: 13),
+                                ),
+                              ),
+                            )
+                          : Column(
+                              children: preparedDishCounts.entries.map((entry) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.restaurant, color: AppColors.accentTeal, size: 14),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            entry.key,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.accentTeal.withOpacity(0.14),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Text(
+                                          'Qty: ${entry.value}',
+                                          style: const TextStyle(
+                                            color: AppColors.accentTeal,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                    ),
+                  ],
+                );
+
+                final rightColumn = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'DAILY ORDERS LOG',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    controller.dailyOrders.isEmpty
+                        ? GlassContainer(
+                            backdropColor: Colors.white.withOpacity(0.02),
+                            borderRadius: BorderRadius.circular(16),
+                            padding: const EdgeInsets.all(24),
+                            child: const Center(
+                              child: Text(
+                                'No orders processed today.',
+                                style: TextStyle(color: Colors.white38, fontSize: 13),
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: controller.dailyOrders.length,
+                            itemBuilder: (context, index) {
+                              final order = controller.dailyOrders[index];
+                              return _buildChefHistoryTile(order);
+                            },
+                          ),
+                  ],
+                );
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: leftColumn),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 3, child: rightColumn),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    children: [
+                      leftColumn,
+                      const SizedBox(height: 24),
+                      rightColumn,
+                    ],
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboardMetricTile(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.lightTextSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChefHistoryTile(OrderModel order) {
+    Color statusColor;
+    switch (order.status) {
+      case 'sent_to_kitchen':
+        statusColor = AppColors.info;
+        break;
+      case 'preparing':
+        statusColor = AppColors.accentOrange;
+        break;
+      case 'ready':
+      case 'served':
+      case 'paid':
+        statusColor = AppColors.success;
+        break;
+      case 'cancelled':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Table ${order.tableNumber} - Order',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  Text(
+                    'ID: #${order.id.substring(0, 8).toUpperCase()}',
+                    style: const TextStyle(color: Colors.white38, fontSize: 10),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: statusColor.withOpacity(0.4)),
+                ),
+                child: Text(
+                  order.status.toUpperCase(),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(color: Colors.white10, height: 1),
+          const SizedBox(height: 6),
+          Column(
+            children: order.items.map((item) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.circle, color: Colors.white30, size: 5),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${item.quantity}x ${item.itemName}',
+                      style: const TextStyle(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
   }
 }

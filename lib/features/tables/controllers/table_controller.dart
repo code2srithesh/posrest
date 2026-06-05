@@ -8,6 +8,7 @@ import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/themes/app_colors.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class TableController extends GetxController {
   final tableRepository = TableRepository();
@@ -91,21 +92,11 @@ class TableController extends GetxController {
   void _showOrderReadyNotification(OrderModel order) {
     if (Get.testMode) return;
     try {
-      Get.snackbar(
-        '🛎️ Food Ready!',
-        'Table ${order.tableNumber}: Order is ready for pickup!',
-        backgroundColor: AppColors.success,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 4),
-        icon: const Icon(Icons.room_service, color: Colors.white),
-        boxShadows: [
-          BoxShadow(
-            color: AppColors.success.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 2,
-          )
-        ],
+      CustomNotification.show(
+        title: '🛎️ Food Ready!',
+        message: 'Table ${order.tableNumber}: Order is ready for pickup!',
+        icon: Icons.room_service,
+        color: AppColors.success,
       );
     } catch (_) {}
   }

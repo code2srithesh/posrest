@@ -1,12 +1,17 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
+import '../../../core/themes/app_colors.dart';
+import '../../../core/widgets/custom_notification.dart';
 
 class KitchenController extends GetxController {
   final orderRepository = OrderRepository();
 
   final allOrders = <OrderModel>[].obs;
+  final dailyOrders = <OrderModel>[].obs; // Today's orders for chef summary
+  final showDashboard = false.obs; // Toggle between active KDS queue and summary
   final pendingItems = <OrderItemModel>[].obs; // Items pending preparation
   final preparingItems = <OrderItemModel>[].obs; // Items being prepared
   final isLoading = false.obs;
@@ -17,14 +22,18 @@ class KitchenController extends GetxController {
 
   Timer? _refreshTimer;
 
-  // Safe snackbar call that won't crash in test environments
-  void _showSnackbar(String title, String message) {
+  // Safe notification overlay call that won't crash in test environments
+  void _showNotification(String title, String message, {Color? color}) {
     if (Get.testMode) return;
     try {
-      Get.snackbar(title, message);
+      CustomNotification.show(
+        title: title,
+        message: message,
+        color: color ?? AppColors.accentTeal,
+        icon: Icons.kitchen_outlined,
+      );
     } catch (e) {
-      // Silently fail if context is not available (e.g., in tests)
-      // This is expected in unit test environments
+      // Silently fail if context is not available
     }
   }
 
@@ -69,6 +78,10 @@ class KitchenController extends GetxController {
 
       allOrders.value = activeOrders;
 
+      // Load all today's orders for chef summary/dashboard statistics
+      final todayOrders = await orderRepository.getDailyOrders(DateTime.now());
+      dailyOrders.assignAll(todayOrders);
+
       // Extract all pending and preparing items
       List<OrderItemModel> pending = [];
       List<OrderItemModel> preparing = [];
@@ -86,7 +99,7 @@ class KitchenController extends GetxController {
       pendingItems.value = pending;
       preparingItems.value = preparing;
     } catch (e) {
-      _showSnackbar('Error', 'Failed to load kitchen orders: $e');
+      _showNotification('Error', 'Failed to load kitchen orders: $e', color: AppColors.error);
     } finally {
       isLoading.value = false;
     }
@@ -110,10 +123,10 @@ class KitchenController extends GetxController {
       );
 
       await orderRepository.updateOrder(updatedOrder);
-      _showSnackbar('Success', 'Started preparing order');
+      _showNotification('Success', 'Started preparing order', color: AppColors.accentOrange);
       await loadKitchenOrders();
     } catch (e) {
-      _showSnackbar('Error', 'Failed to start preparing: $e');
+      _showNotification('Error', 'Failed to start preparing: $e', color: AppColors.error);
     }
   }
 
@@ -124,18 +137,13 @@ class KitchenController extends GetxController {
       final itemIndex = order.items.indexWhere((i) => i.id == itemId);
 
       if (itemIndex != -1) {
-        // Create new item with preparing status
-        final item = order.items[itemIndex];
-        // In a real app, you'd create a new OrderItemModel with updated status
-        // For now, we'll update the status directly
-
         // Update in repository
         await orderRepository.updateOrder(order);
-        _showSnackbar('Success', 'Started preparing: ${item.itemName}');
+        _showNotification('Success', 'Started preparing: ${order.items[itemIndex].itemName}', color: AppColors.accentOrange);
         await loadKitchenOrders();
       }
     } catch (e) {
-      _showSnackbar('Error', 'Failed to update item: $e');
+      _showNotification('Error', 'Failed to update item: $e', color: AppColors.error);
     }
   }
 
@@ -148,9 +156,6 @@ class KitchenController extends GetxController {
       if (itemIndex != -1) {
         final item = order.items[itemIndex];
 
-        // Update item status to ready
-        // In a real app, create new OrderItemModel with OrderItemStatus.ready
-
         // Check if all items are ready
         final allReady = order.items.every(
           (i) => i.id == itemId || i.status == OrderItemStatus.ready,
@@ -161,15 +166,15 @@ class KitchenController extends GetxController {
           final updatedOrder = order.copyWith(status: 'ready');
           await orderRepository.updateOrder(updatedOrder);
           _notifyOrderReady(orderId, order.tableNumber);
-          _showSnackbar('Success', 'Order ready for table!');
+          _showNotification('Success', 'Order ready for table!', color: AppColors.success);
         } else {
-          _showSnackbar('Success', '${item.itemName} is ready!');
+          _showNotification('Success', '${item.itemName} is ready!', color: AppColors.success);
         }
 
         await loadKitchenOrders();
       }
     } catch (e) {
-      _showSnackbar('Error', 'Failed to mark item ready: $e');
+      _showNotification('Error', 'Failed to mark item ready: $e', color: AppColors.error);
     }
   }
 
@@ -193,10 +198,10 @@ class KitchenController extends GetxController {
 
       await orderRepository.updateOrder(updatedOrder);
       _notifyOrderReady(orderId, order.tableNumber);
-      _showSnackbar('Success', 'Order is ready for pickup!');
+      _showNotification('Success', 'Order is ready for pickup!', color: AppColors.success);
       await loadKitchenOrders();
     } catch (e) {
-      _showSnackbar('Error', 'Failed to mark order ready: $e');
+      _showNotification('Error', 'Failed to mark order ready: $e', color: AppColors.error);
     }
   }
 
@@ -208,10 +213,27 @@ class KitchenController extends GetxController {
       await orderRepository.updateOrder(updatedOrder);
       allOrders.removeWhere((o) => o.id == orderId);
       readyOrders.removeWhere((o) => o.id == orderId);
-      _showSnackbar('Success', 'Order marked as served');
+      _showNotification('Success', 'Order marked as served', color: AppColors.accentTeal);
       await loadKitchenOrders();
     } catch (e) {
-      _showSnackbar('Error', 'Failed to mark order served: $e');
+      _showNotification('Error', 'Failed to mark order served: $e', color: AppColors.error);
+    }
+  }
+
+  // Reject an order (Chef action)
+  Future<void> rejectOrder(String orderId) async {
+    try {
+      // Find from allOrders
+      final order = allOrders.firstWhere((o) => o.id == orderId);
+      final updatedOrder = order.copyWith(
+        status: 'cancelled',
+        updatedAt: DateTime.now(),
+      );
+      await orderRepository.updateOrder(updatedOrder);
+      _showNotification('Rejected', 'Order for Table ${order.tableNumber} was rejected', color: Colors.red);
+      await loadKitchenOrders();
+    } catch (e) {
+      _showNotification('Error', 'Failed to reject order: $e', color: AppColors.error);
     }
   }
 
